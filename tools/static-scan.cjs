@@ -87,12 +87,13 @@ if (missingNav.length) add('mid', 'panel/index.html', '', '这些分组没有导
     const id = /id: '([a-z-]+)'/.exec(e)?.[1]
     const special = /special: '([a-z]+)'/.exec(e)?.[1]
     if (!special) continue
-    if (/groups:/.test(e)) continue // 有 groups：可以放在块里
-    const dispatch = panel.indexOf("special === '" + special + "'")
-    if (dispatch < 0) {
+    if (/groups:/.test(e)) continue // 有 groups：放分组块里没问题
+    const bySpecial = panel.indexOf("special === '" + special + "'")
+    const byId = panel.indexOf("nav.id === '" + id + "'")
+    if (bySpecial < 0 && byId < 0) {
       add('high', 'panel/index.html', '', '导航页没有分发: ' + id, 'special=' + special)
-    } else if (groupsIdx >= 0 && dispatch > groupsIdx) {
-      add('high', 'panel/index.html', '', '无 groups 的页被放进了分组块: ' + id, '点了会没反应')
+    } else if (bySpecial > groupsIdx && byId < 0 && groupsIdx >= 0) {
+      add('high', 'panel/index.html', '', '无 groups 的页被放进分组块: ' + id, '点了会没反应')
     }
   }
 }
