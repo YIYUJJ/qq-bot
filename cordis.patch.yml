@@ -1,0 +1,8 @@
+# @dsh-external/dsh-qq-bot —— bundle 装配入口
+#
+# 没有这个文件和 package.json 里的 dsh.bundle.patch 声明，重启后插件不会加载。
+# name 必须写完整包名（client-modules 用 entry.options.name 当 specifier 去定位 package.json）。
+- insert:
+    - id: dsh-qq-bot
+      name: '@dsh-external/dsh-qq-bot'
+      config: {}

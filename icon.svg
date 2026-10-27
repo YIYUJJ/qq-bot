@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="QQ Bot">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4B8BF5"/>
+      <stop offset="1" stop-color="#2456C7"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bg)"/>
+  <path d="M14 36c0-9 8-16 18-16s18 7 18 16c0 4-2 7-5 9l2 7-8-4c-2 .6-4 1-7 1s-5-.4-7-1l-8 4 2-7c-3-2-5-5-5-9z" fill="#EAF2FF"/>
+  <circle cx="26" cy="34" r="2.6" fill="#2456C7"/>
+  <circle cx="38" cy="34" r="2.6" fill="#2456C7"/>
+  <path d="M27 42c1.8 2 3.5 3 5 3s3.2-1 5-3" stroke="#2456C7" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+  <path d="M18 52c3 3 8 4 14 4s11-1 14-4" stroke="#9CC2FF" stroke-width="2" fill="none" stroke-linecap="round" opacity=".75"/>
+</svg>

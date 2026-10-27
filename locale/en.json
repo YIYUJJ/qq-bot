@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "QQ Bot",
+    "description": "Whale-girl chat bot for QQ groups: connects to SnowLuma OneBot, replies with a single in-process LLM stream, and ships a /qq-bot console."
+  }
+}

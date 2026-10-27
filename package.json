@@ -1,0 +1,42 @@
+{
+  "name": "@dsh-external/dsh-qq-bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "QQ 群拟人聊天机器人（Cordis 插件）：直连 SnowLuma OneBot，进程内 ctx.llm.stream 快路径，带 /qq-bot 控制台",
+  "main": "./lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "panel",
+    "locale",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md",
+    "build-client.mjs"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime",
+        "@deepseek-ai/dsh-client-ui-slots"
+      ]
+    }
+  },
+  "license": "MIT",
+  "scripts": {
+    "test:policy": "node lib/test-policy.mjs",
+    "test:outbox": "node lib/test-outbox.mjs",
+    "build:client": "node build-client.mjs"
+  }
+}
