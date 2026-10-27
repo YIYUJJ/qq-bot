@@ -77,7 +77,9 @@ check('面板产物不是旧的', () => {
 /* ── 2. 单测 ── */
 if (!QUICK) {
   check('单测', () => {
-    const suites = ['test-policy.mjs', 'test-outbox.mjs', 'test-roomcfg.mjs']
+    const suites = readdirSync(join(ROOT, 'lib'))
+      .filter((f) => f.startsWith('test-') && f.endsWith('.mjs'))
+      .sort()
     const out = []
     for (const s of suites) {
       const r = execFileSync(process.execPath, [join(ROOT, 'lib', s)], { encoding: 'utf8' })
