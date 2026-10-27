@@ -61,10 +61,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/<your-name>/dsh-qq-bot.git"
+    "url": "git+https://github.com/<your-name>/qq-bot.git"
   },
   "bugs": {
-    "url": "https://github.com/<your-name>/dsh-qq-bot/issues"
+    "url": "https://github.com/<your-name>/qq-bot/issues"
   },
-  "homepage": "https://github.com/<your-name>/dsh-qq-bot#readme"
+  "homepage": "https://github.com/<your-name>/qq-bot#readme"
 }

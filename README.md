@@ -1,6 +1,6 @@
-# dsh-qq-bot
+# qq-bot
 
-> 给 [DSH（DeepSeek Harness）](https://github.com/deepseek-ai) 用的 QQ 群拟人聊天机器人：直连 SnowLuma OneBot v11，进程内流式调用模型，自带 Web 控制台和长期记忆。
+> 项目名 **qq-bot**（DSH 插件包名：`@dsh-external/dsh-qq-bot`）。给 [DSH（DeepSeek Harness）](https://github.com/deepseek-ai) 用的 QQ 群拟人聊天机器人：直连 SnowLuma OneBot v11，进程内流式调用模型，自带 Web 控制台和长期记忆。
 
 它不是"关键词问答机"：有人设、有情绪、会记事儿、看得懂图、能看视频、会发表情包，也会在没人说话时自己冒个泡——但**只在白名单群里**，其它群一律不碰。
 
