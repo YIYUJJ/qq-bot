@@ -16,6 +16,7 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
 const DATA = join(process.env.USERPROFILE || '', '.dsh', 'qq-bot')
 const LOG = join(DATA, 'bot.log')
 const QUICK = process.argv.includes('--quick')
+const CI = process.argv.includes('--ci') // CI 里没有 SnowLuma / 本地配置，跳过运行时检查
 const modUrl = (p) => pathToFileURL(p).href
 
 const results = []
@@ -64,7 +65,7 @@ check('面板脚本语法', () => {
   return '内联脚本可解析'
 })
 
-check('面板产物不是旧的', () => {
+if (!CI) check('面板产物不是旧的', () => {
   const a = join(ROOT, 'panel', 'index.html')
   const b = join(ROOT, 'lib', 'client.js')
   if (!existsSync(b)) throw new Error('lib/client.js 不存在，先跑 node build-client.mjs')
@@ -75,7 +76,7 @@ check('面板产物不是旧的', () => {
 })
 
 /* ── 2. 单测 ── */
-if (!QUICK) {
+if (!QUICK && !CI) {
   check('单测', () => {
     const suites = readdirSync(join(ROOT, 'lib'))
       .filter((f) => f.startsWith('test-') && f.endsWith('.mjs'))
@@ -94,7 +95,7 @@ if (!QUICK) {
 
 /* ── 3. 配置 / 元数据 ── */
 const haveCfg = existsSync(join(DATA, 'config.json'))
-check('配置文件可读', () => {
+if (!CI) check('配置文件可读', () => {
   if (!haveCfg) throw new Error('找不到 ' + join(DATA, 'config.json'))
   const cfg = JSON.parse(readFileSync(join(DATA, 'config.json'), 'utf8'))
   if (!Array.isArray(cfg.allowGroups) || !cfg.allowGroups.length) throw new Error('allowGroups 为空')
@@ -125,7 +126,7 @@ await checkAsync('模块导出齐全', async () => {
 })
 
 /* ── 4. 插件存活 ── */
-check('插件启动过且无致命错误', () => {
+if (!CI) check('插件启动过且无致命错误', () => {
   if (!existsSync(LOG)) throw new Error('日志不存在')
   const lines = readFileSync(LOG, 'utf8').split(/\r?\n/).filter(Boolean)
   let last = -1
@@ -138,7 +139,7 @@ check('插件启动过且无致命错误', () => {
   return `启动于 ${lines[last].slice(1, 20)}｜最近日志 ${ageMin} 分钟前`
 })
 
-await checkAsync('SnowLuma 网关可达', async () => {
+if (!CI) await checkAsync('SnowLuma 网关可达', async () => {
   const ob = await import(modUrl(join(ROOT, 'lib', 'onebot.mjs')))
   const acc = ob.readAccounts('C:/SnowLuma').find((x) => x.http)
   if (!acc) throw new Error('读不到 SnowLuma 账号配置')
@@ -153,7 +154,7 @@ await checkAsync('SnowLuma 网关可达', async () => {
   return '账号 ' + (j.data?.user_id || '?')
 }, { soft: true })
 
-await checkAsync('推送端口在监听', () => new Promise((resolve, reject) => {
+if (!CI) await checkAsync('推送端口在监听', () => new Promise((resolve, reject) => {
   const s = net.connect(3101, '127.0.0.1')
   s.setTimeout(3000)
   s.on('connect', () => { s.destroy(); resolve('127.0.0.1:3101 可连') })

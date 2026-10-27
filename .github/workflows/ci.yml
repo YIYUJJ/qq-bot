@@ -1,0 +1,23 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: 安装依赖
+        run: npm install --no-audit --no-fund
+      - name: 单测
+        run: npm test
+      - name: 静态检查（语法 / 面板 / 元数据 / 模块导出）
+        run: npm run smoke:ci

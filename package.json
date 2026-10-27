@@ -46,7 +46,8 @@
     "test:extras": "node lib/test-extras.mjs",
     "smoke": "node scripts/smoke.mjs",
     "scan:static": "node tools/static-scan.cjs",
-    "build:client": "node build-client.mjs"
+    "build:client": "node build-client.mjs",
+    "smoke:ci": "node scripts/smoke.mjs --ci"
   },
   "keywords": [
     "dsh",
