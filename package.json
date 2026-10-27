@@ -19,6 +19,8 @@
     "icon.svg",
     "cordis.patch.yml",
     "README.md",
+    "INSTALL.md",
+    "AGENTS.md",
     "LICENSE",
     "build-client.mjs"
   ],
