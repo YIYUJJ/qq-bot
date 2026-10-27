@@ -1,9 +1,8 @@
 {
   "name": "@dsh-external/dsh-qq-bot",
   "version": "0.1.0",
-  "private": true,
   "type": "module",
-  "description": "QQ 群拟人聊天机器人（Cordis 插件）：直连 SnowLuma OneBot，进程内 ctx.llm.stream 快路径，带 /qq-bot 控制台",
+  "description": "QQ 群拟人聊天机器人（DSH Cordis 插件）：直连 SnowLuma OneBot v11，进程内流式调用，自带 Web 控制台与长期记忆",
   "main": "./lib/index.js",
   "exports": {
     ".": "./lib/index.js",
@@ -15,10 +14,12 @@
   "files": [
     "lib",
     "panel",
+    "scripts",
     "locale",
     "icon.svg",
     "cordis.patch.yml",
     "README.md",
+    "LICENSE",
     "build-client.mjs"
   ],
   "dsh": {
@@ -35,8 +36,33 @@
   },
   "license": "MIT",
   "scripts": {
+    "test": "node scripts/run-tests.mjs",
     "test:policy": "node lib/test-policy.mjs",
     "test:outbox": "node lib/test-outbox.mjs",
+    "test:roomcfg": "node lib/test-roomcfg.mjs",
+    "test:text": "node lib/test-text.mjs",
+    "test:extras": "node lib/test-extras.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "scan:static": "node tools/static-scan.cjs",
     "build:client": "node build-client.mjs"
-  }
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "cordis",
+    "qq",
+    "qq-bot",
+    "onebot",
+    "snowluma",
+    "llm",
+    "chatbot"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/<your-name>/dsh-qq-bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/<your-name>/dsh-qq-bot/issues"
+  },
+  "homepage": "https://github.com/<your-name>/dsh-qq-bot#readme"
 }
