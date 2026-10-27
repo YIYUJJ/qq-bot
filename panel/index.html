@@ -238,11 +238,12 @@ function renderActive() {
   if (nav.id === 'manual') return safe('手动操作', renderManual);
   if (nav.id === 'diag') return safe('诊断', renderDiag);
   if (nav.special === 'roomcfg') return safe('每群性格', renderRoomCfg);
+  // 这一页没有 groups，不能放进下面的分组块里
+  if (nav.special === 'curve') return safe('成长曲线', renderCurveExtra);
   if (nav.groups) {
     safe('参数页', () => renderParams(nav));
     if (nav.special === 'stickers') safe('图库', renderStickerExtra);
     if (nav.special === 'memory') safe('长期记忆', renderMemoryExtra);
-    if (nav.special === 'curve') safe('成长曲线', renderCurveExtra);
     if (nav.special === 'members') safe('群成员', renderMembersExtra);
     if (nav.special === 'ops') safe('日志与配置', renderOpsExtra);
   }

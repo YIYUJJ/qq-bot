@@ -78,6 +78,25 @@ const navGroups = [...panel.matchAll(/groups: \[([^\]]*)\]/g)].flatMap((m) => [.
 const missingNav = groupIds.filter((g) => !navGroups.includes(g))
 if (missingNav.length) add('mid', 'panel/index.html', '', '这些分组没有导航页', missingNav.join(', '))
 
+/* 7.5) 没有 groups 的 special 页，必须放在 if (nav.groups) 外面分发 */
+{
+  const navSrc = panel.slice(panel.indexOf('const NAV = ['), panel.indexOf('];', panel.indexOf('const NAV = [')))
+  const entries = [...navSrc.matchAll(/\{ id: '([a-z-]+)'[^}]*\}/g)].map((m) => m[0])
+  const groupsIdx = panel.indexOf('if (nav.groups) {')
+  for (const e of entries) {
+    const id = /id: '([a-z-]+)'/.exec(e)?.[1]
+    const special = /special: '([a-z]+)'/.exec(e)?.[1]
+    if (!special) continue
+    if (/groups:/.test(e)) continue // 有 groups：可以放在块里
+    const dispatch = panel.indexOf("special === '" + special + "'")
+    if (dispatch < 0) {
+      add('high', 'panel/index.html', '', '导航页没有分发: ' + id, 'special=' + special)
+    } else if (groupsIdx >= 0 && dispatch > groupsIdx) {
+      add('high', 'panel/index.html', '', '无 groups 的页被放进了分组块: ' + id, '点了会没反应')
+    }
+  }
+}
+
 /* 8) 面板 onclick 指向的函数必须存在 */
 const panelFns = new Set([...(panel.matchAll(/function ([A-Za-z0-9_]+)\(/g))].map((m) => m[1]))
 const handlerFns = [...panel.matchAll(/\$\('#([A-Za-z0-9_-]+)'\)\.(?:onclick|onchange)\s*=\s*([A-Za-z0-9_]+)/g)].map((m) => m[2])
