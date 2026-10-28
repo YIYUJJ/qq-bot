@@ -98,6 +98,28 @@ if (missingNav.length) add('mid', 'panel/index.html', '', '这些分组没有导
   }
 }
 
+/* 7.8) index.js 不许裸用"已搬到别的模块"的函数名（搬家用漏过一次，把宿主进程带崩了） */
+{
+  const modFiles = Object.keys(files).filter((f) => f !== 'index.js')
+  for (const mf of modFiles) {
+    const src = files[mf]
+    const names = new Set()
+    for (const m of src.matchAll(/^\s*(?:async )?function ([A-Za-z0-9_]+)\(/gm)) names.add(m[1])
+    for (const m of src.matchAll(/^\s*const ([A-Za-z0-9_]+) = (?:\(|async \(|function)/gm)) names.add(m[1])
+    for (const name of names) {
+      if (name.length < 4) continue
+      const re = new RegExp('(?<!\\.)\\b' + name + '\\s*\\(')
+      index.split('\n').forEach((ln, i) => {
+        if (!re.test(ln)) return
+        if (/getFeatures\(\)\./.test(ln)) return
+        if (new RegExp('function ' + name).test(ln)) return
+        if (/^\s*(?:import|\/\/|\*)/.test(ln)) return
+        add('high', 'index.js', String(i + 1), '裸用了 ' + mf + ' 里的 ' + name, '应该通过注入/getFeatures() 调用，否则运行时会 ReferenceError')
+      })
+    }
+  }
+}
+
 /* 8) 面板 onclick 指向的函数必须存在 */
 const panelFns = new Set([...(panel.matchAll(/function ([A-Za-z0-9_]+)\(/g))].map((m) => m[1]))
 const handlerFns = [...panel.matchAll(/\$\('#([A-Za-z0-9_-]+)'\)\.(?:onclick|onchange)\s*=\s*([A-Za-z0-9_]+)/g)].map((m) => m[2])
