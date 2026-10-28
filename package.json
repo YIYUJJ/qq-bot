@@ -47,7 +47,9 @@
     "smoke": "node scripts/smoke.mjs",
     "scan:static": "node tools/static-scan.cjs",
     "build:client": "node build-client.mjs",
-    "smoke:ci": "node scripts/smoke.mjs --ci"
+    "smoke:ci": "node scripts/smoke.mjs --ci",
+    "lint": "eslint \"lib/**/*.mjs\"",
+    "verify": "node scripts/run-tests.mjs && node scripts/smoke.mjs --ci && npm run lint"
   },
   "keywords": [
     "dsh",
@@ -67,5 +69,8 @@
   "bugs": {
     "url": "https://github.com/YIYUJJ/qq-bot/issues"
   },
-  "homepage": "https://github.com/YIYUJJ/qq-bot#readme"
+  "homepage": "https://github.com/YIYUJJ/qq-bot#readme",
+  "devDependencies": {
+    "eslint": "^9.39.5"
+  }
 }
