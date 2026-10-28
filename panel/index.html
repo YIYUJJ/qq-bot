@@ -1,4 +1,14 @@
 <!doctype html>
+</html>
+</body>
+    if (/Ms$/.test(k)) {
+      const ms = Math.abs(n);
+      if (ms < 1000) return '';
+      if (ms < 60000) return '≈ ' + (Math.round(ms / 100) / 10) + ' 秒';
+      if (ms < 3600000) return '≈ ' + (Math.round(ms / 600) / 100) + ' 分钟';
+      return '≈ ' + (Math.round(ms / 360000) / 10) + ' 小时';
+    }
+<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -373,20 +383,35 @@ function renderFeatures() {
 
 /* ── 参数表单 ─────────────────────────────────────── */
 function humanValue(k, v, m) {
-  // 每个数字字段都给一句"人话"：能换算就换算，不能换算就给可读格式
+  // 只在"换个说法确实更好懂"时才显示，避免 3 行 = 3 行 这种废话
   const n = Number(v);
   if (v == null || v === '' || !Number.isFinite(n)) return '';
+
+  // 毫秒：按大小自动挑最好读的单位；不足 1 秒保持毫秒（更精确）
   if (m && m.scale) {
+    if (/Ms$/.test(k)) {
+      const ms = Math.abs(n);
+      if (ms < 1000) return '';
+      if (ms < 60000) return '≈ ' + Math.round((ms / 1000) * 10) / 10 + ' 秒';
+      if (ms < 3600000) return '≈ ' + Math.round((ms / 60000) * 10) / 10 + ' 分钟';
+      return '≈ ' + Math.round((ms / 3600000) * 10) / 10 + ' 小时';
+    }
     return '≈ ' + (Math.round((n / m.scale) * 100) / 100) + ' ' + (m.altUnit || '');
   }
-  if (m && (m.unit === '毫秒' || /Ms$/.test(k))) return '≈ ' + fmtMs(n);
-  if (m && (m.unit === '字节' || /Bytes$/.test(k))) return '≈ ' + fmtBytes(n);
+  // 字节：小于 1KB 的不换算
+  if (m && (m.unit === '字节' || /Bytes$/.test(k))) {
+    if (Math.abs(n) < 1024) return '';
+    return '≈ ' + fmtBytes(n);
+  }
+  // 概率：0.21 → 21%
   if (m && m.min === 0 && m.max === 1) return pct(n);
+  // 只有大数才值得换成"万/亿"
   if (Math.abs(n) >= 100000000) return '≈ ' + (n / 100000000).toFixed(1).replace(/\.0$/, '') + ' 亿';
   if (Math.abs(n) >= 10000) return '≈ ' + (n / 10000).toFixed(1).replace(/\.0$/, '') + ' 万';
-  if (Math.abs(n) >= 1000) return '= ' + n.toLocaleString('zh-CN');
-  return (m && m.unit) ? '= ' + n + ' ' + m.unit : '= ' + n;
+  // 其它（几条、几行、几个字）本来就是最直观的单位，不再重复
+  return '';
 }
+
 
 function fmtBytes(n) {
   const b = Number(n) || 0;
