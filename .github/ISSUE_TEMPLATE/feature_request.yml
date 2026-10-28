@@ -1,0 +1,27 @@
+name: 功能建议
+description: 想要新的玩法或改进
+labels: [enhancement]
+body:
+  - type: textarea
+    id: want
+    attributes:
+      label: 你希望它做什么
+      placeholder: 群里发语音条时，能把语音转成文字再回复
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: 为什么
+      description: 现在的不便之处
+    validations:
+      required: false
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: 实现思路（可选）
+      description: 比如用哪个 API、需要什么依赖
+    validations:
+      required: false

@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安装问题
+    url: https://github.com/YIYUJJ/qq-bot/blob/main/INSTALL.md
+    about: 先看安装步骤；按 AGENTS.md 让 AI 代装也行
+  - name: 疑问 / 讨论
+    url: https://github.com/YIYUJJ/qq-bot/discussions
+    about: 不确定是不是 bug 的话，先发讨论

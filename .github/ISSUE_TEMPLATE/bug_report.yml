@@ -1,0 +1,71 @@
+name: Bug 报告
+description: 机器人不回复、回复不对、面板打不开等
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        先跑一遍体检，把输出贴上来会快很多：
+
+        ```powershell
+        node scripts/doctor.mjs
+        ```
+
+  - type: textarea
+    id: what
+    attributes:
+      label: 发生了什么
+      description: 现象 + 你期望的结果
+      placeholder: 群里发「在吗」没有任何反应，期望它回一句
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 在群 123 发「在吗」
+        2. 等了 10 秒
+        3. 日志没有新行
+    validations:
+      required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: doctor 输出
+      description: 跑 `node scripts/doctor.mjs` 的完整输出（记得去掉 token）
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: log
+    attributes:
+      label: 日志尾部
+      description: `~/.dsh/qq-bot/bot.log` 最后 20 行（日志是 UTC 时间）
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本
+      description: 面板左上角显示的版本，或 `package.json` 里的 version
+      placeholder: v0.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: env
+    attributes:
+      label: 环境
+      options:
+        - Windows（已验证）
+        - Linux
+        - macOS
+        - 其他（请说明）
+    validations:
+      required: true
