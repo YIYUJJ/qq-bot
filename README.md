@@ -68,7 +68,7 @@ pnpm add link:../path/to/dsh-qq-bot
 
 ### 4. 第一次配置
 
-打开面板（`http://127.0.0.1:3101/qq-bot`），至少填：
+打开面板（DSH Web 界面的 `http://127.0.0.1:<DSH 端口>/qq-bot`；3101 是推送端口，不是面板），至少填：
 
 | 配置 | 说明 |
 |---|---|
@@ -91,31 +91,38 @@ pnpm add link:../path/to/dsh-qq-bot
 ## 开发与测试
 
 ```bash
-npm test                 # 5 组单测
-npm run smoke            # 冒烟：语法 → 单测 → 配置一致性 → 插件存活 → 网关/端口
-npm run smoke -- --quick # 跳过单测
-npm run scan:static      # 静态扫描：配置键拼写、重复函数、未 await、面板 action 对不上…
-node build-client.mjs    # 改完 panel/index.html 必须重跑
+node scripts/run-tests.mjs   # 全部单元 + 集成测试（63 套）
+node scripts/smoke.mjs       # 冒烟：语法 → 配置一致性 → 依赖审计 → 插件存活 → 网关/端口
+node scripts/smoke.mjs --quick
+node scripts/doctor.mjs      # 环境体检：配置/连接/白名单/模型路由/日志
+node build-client.mjs        # 改完 panel/index.html 必须重跑
 ```
 
 ## 目录
 
 ```
 lib/
-  index.js      插件入口：消息接入、flush 主流程、面板 API
-  features.mjs  小游戏 / 投票 / 提醒 / 亲密度 / 曲线 / 日记
-  extras.mjs    纯工具：骰子、提醒解析、网页抓取、文档取文本
-  policy.mjs    拆句、截断、节流
-  humanize.mjs  去 AI 味
-  memory.mjs    事实/画像/摘要/日记的读写
-  onebot.mjs    OneBot v11 客户端（HTTP + WS）
-  video.mjs     视频抽帧、yt-dlp
-  outbox.mjs    发送失败重试队列
-  meta.mjs      配置元数据（面板唯一来源）
-  roomcfg.mjs   每群覆盖
-panel/          面板源码（构建产物 lib/client.js）
-scripts/        smoke.mjs、run-tests.mjs
-tools/          static-scan.cjs（开发用）
+  index.js          插件入口：装配模块、挂事件、注册工具、启动
+  rooms.mjs         每群配置覆盖 + 会话状态 + 白名单闸
+  config-store.mjs  配置读写 / 校验 / 热重载
+  state-init.mjs    持久化容器（facts / stickers / usage / replied / outbox）
+  memory-store.mjs  长期记忆存储     memory-ai.mjs  记忆的模型侧
+  memory-auto.mjs   自动记忆维护     prompt.mjs     人设 / 情绪 / 系统提示词
+  decision.mjs      回复决策         model.mjs      模型调用与路由
+  notes.mjs         链接 / 搜索笔记  vision.mjs     识图链路
+  video-chain.mjs   视频抽帧描述     media.mjs      识图缓存 / 媒体 key / ffmpeg
+  sticker-store.mjs 图库持久化       sticker-net.mjs 图库收发
+  polling.mjs       轮询兜底         scheduler.mjs  主动说话 + 定时器
+  startup.mjs       启动序列         ops.mjs        运维 + 备份 / 重启
+  panel.mjs         面板数据         panel-mount.mjs 面板挂载
+  http-api.mjs      面板 API         register-tools.mjs 工具注册
+  schema.mjs / meta.mjs     配置单一真相 / 面板元数据
+  safe.mjs / store.mjs / metrics.mjs   错误隔离 / 原子写 / 指标
+  features.mjs / extras.mjs / policy.mjs / humanize.mjs   玩法 / 工具 / 拆句 / 去 AI 味
+panel/              面板源码（构建产物 lib/client.js）
+scripts/            run-tests / smoke / doctor / setup
+tools/              audit-config-types / check-module-deps / probe-apply / static-scan
+docs/               ARCHITECTURE / TESTING / PITFALLS
 ```
 
 ## 已知限制
@@ -138,6 +145,7 @@ tools/          static-scan.cjs（开发用）
 
 - [INSTALL.md](./INSTALL.md)：给人看的安装步骤
 - [AGENTS.md](./AGENTS.md)：给 AI 看的安装流程
+- [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)：模块边界与依赖规则
 - [docs/TESTING.md](./docs/TESTING.md)：测试与排查手册
 - [docs/PITFALLS.md](./docs/PITFALLS.md)：踩坑记录（含已加的检查）
 
