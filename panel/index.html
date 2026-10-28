@@ -383,34 +383,40 @@ function renderFeatures() {
 
 /* ── 参数表单 ─────────────────────────────────────── */
 function humanValue(k, v, m) {
-  // 只在"换个说法确实更好懂"时才显示，避免 3 行 = 3 行 这种废话
+  // 左：原始小单位（精确）；右：换成人一眼能读懂的（每个数字字段都有）
   const n = Number(v);
   if (v == null || v === '' || !Number.isFinite(n)) return '';
+  const abs = Math.abs(n);
 
-  // 毫秒：按大小自动挑最好读的单位；不足 1 秒保持毫秒（更精确）
-  if (m && m.scale) {
-    if (/Ms$/.test(k)) {
-      const ms = Math.abs(n);
-      if (ms < 1000) return '';
-      if (ms < 60000) return '≈ ' + Math.round((ms / 1000) * 10) / 10 + ' 秒';
-      if (ms < 3600000) return '≈ ' + Math.round((ms / 60000) * 10) / 10 + ' 分钟';
-      return '≈ ' + Math.round((ms / 3600000) * 10) / 10 + ' 小时';
-    }
-    return '≈ ' + (Math.round((n / m.scale) * 100) / 100) + ' ' + (m.altUnit || '');
+  // 毫秒 → 秒/分钟/小时
+  if (m && (m.unit === '毫秒' || /Ms$/.test(k) || m.scale)) {
+    if (abs < 1000) return '≈ ' + (Math.round(n * 10) / 10) + ' 毫秒';
+    if (abs < 60000) return '≈ ' + (Math.round((n / 1000) * 10) / 10) + ' 秒';
+    if (abs < 3600000) return '≈ ' + (Math.round((n / 60000) * 10) / 10) + ' 分钟';
+    return '≈ ' + (Math.round((n / 3600000) * 10) / 10) + ' 小时';
   }
-  // 字节：小于 1KB 的不换算
-  if (m && (m.unit === '字节' || /Bytes$/.test(k))) {
-    if (Math.abs(n) < 1024) return '';
-    return '≈ ' + fmtBytes(n);
+  // 秒 → 分钟/小时
+  if (m && m.unit === '秒') {
+    if (abs < 60) return '= ' + n + ' 秒';
+    if (abs < 3600) return '≈ ' + (Math.round((n / 60) * 10) / 10) + ' 分钟';
+    return '≈ ' + (Math.round((n / 3600) * 10) / 10) + ' 小时';
   }
-  // 概率：0.21 → 21%
+  // 字节 / MB
+  if (m && (m.unit === '字节' || /Bytes$/.test(k))) return '≈ ' + fmtBytes(n);
+  if (m && m.unit === 'MB') {
+    if (abs >= 1024) return '≈ ' + (Math.round((n / 1024) * 10) / 10) + ' GB';
+    return '= ' + n + ' MB';
+  }
+  // 概率 0~1
   if (m && m.min === 0 && m.max === 1) return pct(n);
-  // 只有大数才值得换成"万/亿"
-  if (Math.abs(n) >= 100000000) return '≈ ' + (n / 100000000).toFixed(1).replace(/\.0$/, '') + ' 亿';
-  if (Math.abs(n) >= 10000) return '≈ ' + (n / 10000).toFixed(1).replace(/\.0$/, '') + ' 万';
-  // 其它（几条、几行、几个字）本来就是最直观的单位，不再重复
-  return '';
+  // 大数
+  if (abs >= 100000000) return '≈ ' + (n / 100000000).toFixed(1).replace(/\.0$/, '') + ' 亿';
+  if (abs >= 10000) return '≈ ' + (n / 10000).toFixed(1).replace(/\.0$/, '') + ' 万';
+  if (abs >= 1000) return '= ' + n.toLocaleString('zh-CN');
+  // 其余：带上单位，保证右侧永远有东西
+  return m && m.unit ? '= ' + n + ' ' + m.unit : '= ' + n;
 }
+
 
 
 function fmtBytes(n) {
