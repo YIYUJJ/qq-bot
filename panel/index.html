@@ -1030,6 +1030,37 @@ async function renderOpsExtra() {
     <div class="muted small" style="margin-top:6px">只备份配置与记忆（不含表情包/临时文件）。恢复后建议重载插件。</div>
   </div></div>`;
   view.appendChild(bkBox);
+  const auBox = document.createElement('div');
+  auBox.className = 'section';
+  auBox.innerHTML = `<div class="hd">🚀 开机自启</div><div class="card">
+    <div class="row"><label class="hswitch">开机自动启动 SnowLuma <span class="sw"><input type="checkbox" id="au-on" aria-label="开机自启"></span></label>
+      <span class="muted small" id="au-hint"></span></div>
+    <div class="muted small" style="margin-top:6px">在 Windows「启动」文件夹里放一个脚本，登录后自动拉起 QQ 网关（SnowLuma）。关掉就只靠手动启动。</div>
+  </div></div>`;
+  view.appendChild(auBox);
+  const auLoad = async () => {
+    try {
+      const r = await action('autostart.get');
+      const el = $('#au-on'); if (el) el.checked = !!r.enabled;
+      const hint = $('#au-hint');
+      if (hint) hint.textContent = r.enabled ? '已开启' : '已关闭';
+    } catch (e) {
+      const hint = $('#au-hint'); if (hint) hint.textContent = '读取失败：' + e.message;
+    }
+  };
+  const auOn = $('#au-on'); if (auOn) auOn.onchange = async (e) => {
+    const want = e.target.checked;
+    try {
+      const r = await action('autostart.set', { enabled: want });
+      const hint = $('#au-hint'); if (hint) hint.textContent = r.enabled ? '已开启' : '已关闭';
+      toast(r.enabled ? '已开启开机自启' : '已关闭开机自启', 'ok');
+    } catch (err) {
+      e.target.checked = !want;
+      toast('设置失败：' + err.message, 'err');
+    }
+  };
+  auLoad();
+
   const bkLoad = async () => {
     try {
       const r = await action('backup.list');
