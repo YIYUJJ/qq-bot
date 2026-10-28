@@ -91,3 +91,25 @@ plugin_manager set_plugin target=<entryId> enabled=true
 **修复**：面板「运维日志」→「🚀 开机自启」打开（会在 Windows 启动文件夹放一个脚本）。也可以用 `qqbot_autostart` 工具。
 
 **已加检查**：`doctor.mjs` 会检查 3000 端口 / QQ 是否在线，掉线时直接给修复建议。
+
+---
+
+## 5. 插件里 spawn 外部程序，不监听 error → 宿主被带崩
+
+**现象**：DSH 整个应用退出并重启，crash log 里有：
+
+```
+Error: spawn D:\Python311\python.exe ENOENT
+dsh: fatal uncaught exception
+```
+
+**原因**：`spawn()` 找不到可执行文件时不会同步抛错，而是发一个异步 `error` 事件；没有 `child.on('error', ...)` 监听时，这个事件会变成未捕获异常，**直接杀掉宿主进程**（插件和 DSH 共用事件循环）。
+
+**规范**（写进本项目约定）：
+
+1. spawn 前先 `existsSync(bin)`，不存在就返回错误对象
+2. 必须挂 `child.on('error', ...)`
+3. 所有定时器回调包一层 try/catch（见 `safeTick`），别让单个任务异常拖垮整个应用
+4. 外部程序路径优先读环境变量，不要硬编码安装盘
+
+**已加的检查**：`tools/static-scan.cjs` 会检查配置键、跨模块裸调用等；`scripts/doctor.mjs` 会扫日志里的致命错误。
