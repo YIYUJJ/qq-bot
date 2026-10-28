@@ -1123,6 +1123,17 @@ async function renderOpsExtra() {
       const lat = (m && m.latency) || {};
       const fmtLat = (k) => lat[k] ? (lat[k].p50 + ' / ' + lat[k].p95 + ' ms') : '-';
       const errs = (m && m.recentErrors) || [];
+      const u = (m && m.usage) || {};
+      const recent = (m && m.recent) || [];
+      const lastReply = [...recent].reverse().find((x) => x.type === 'reply' && x.stages);
+      const stageRow = lastReply
+        ? '<div class="help" style="margin-top:6px">最近一次回复（trace ' + esc(String(lastReply.trace || '')) + '）</div>' +
+          kv('决策', (lastReply.stages.decideMs ?? '-') + ' ms') +
+          kv('排队', (lastReply.stages.queueMs ?? '-') + ' ms') +
+          kv('生成', (lastReply.stages.generateMs ?? '-') + ' ms') +
+          kv('发送', (lastReply.stages.sendMs ?? '-') + ' ms') +
+          kv('分段', (lastReply.parts ?? '-') + ' 段')
+        : '';
       const kv = (k, v) => '<div class="row"><span class="muted small">' + k + '</span><span style="margin-left:auto">' + v + '</span></div>';
       box.innerHTML =
         kv('收到消息', (c.msgsIn || 0)) +
@@ -1131,6 +1142,10 @@ async function renderOpsExtra() {
         kv('跳过', (c.skipped || 0)) +
         kv('首字延迟 P50/P95', fmtLat('firstTokenMs')) +
         kv('总延迟 P50/P95', fmtLat('totalMs')) +
+        kv('决策 P50/P95', fmtLat('decideMs')) +
+        kv('发送 P50/P95', fmtLat('sendMs')) +
+        kv('累计 token', (u.total || 0) + '（' + (u.calls || 0) + ' 次调用）') +
+        stageRow +
         (errs.length
           ? '<div class="help" style="margin-top:6px">最近错误（' + errs.length + '）</div>' + errs.slice(-5).reverse().map(e => '<div class="small muted">' + esc(new Date(e.at).toLocaleTimeString('zh-CN', { hour12: false })) + ' ' + esc(e.label) + '：' + esc(e.message).slice(0, 80) + '</div>').join('')
           : '<div class="help" style="margin-top:6px">最近没有隔离的异常</div>');
