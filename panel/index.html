@@ -1057,6 +1057,28 @@ async function renderOpsExtra() {
     <div class="muted small" style="margin-top:6px">在 Windows「启动」文件夹里放一个脚本，登录后自动拉起 QQ 网关（SnowLuma）。关掉就只靠手动启动。</div>
   </div></div>`;
   view.appendChild(auBox);
+  const rsBox = document.createElement('div');
+  rsBox.className = 'section';
+  rsBox.innerHTML = `<div class="hd">♻️ 重启 DSH</div><div class="card">
+    <div class="row"><button class="btn" id="dsh-restart">立即重启 DSH</button>
+      <span class="muted small" id="rs-hint">改了面板 UI/viewer 代码后，刷新页面不生效时用它（中断约 4 秒）</span></div>
+  </div></div>`;
+  view.appendChild(rsBox);
+  const rsBtn = $('#dsh-restart'); if (rsBtn) rsBtn.onclick = async () => {
+    if (!confirm('现在重启 DSH？\n\n· 会中断约 4 秒\n· 页面会断开，稍后手动刷新\n· 正在进行的对话会中断')) return;
+    rsBtn.disabled = true;
+    const hint = $('#rs-hint');
+    try {
+      await action('dsh.restart');
+      if (hint) hint.textContent = '已请求重启，约 4 秒后回来；回来后请刷新页面';
+      toast('正在重启 DSH…', 'ok');
+    } catch (e) {
+      rsBtn.disabled = false;
+      if (hint) hint.textContent = '重启失败：' + e.message;
+      toast('重启失败：' + e.message, 'err');
+    }
+  };
+
   const auLoad = async () => {
     try {
       const r = await action('autostart.get');
