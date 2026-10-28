@@ -373,7 +373,11 @@ function renderFeatures() {
 
 /* ── 参数表单 ─────────────────────────────────────── */
 function humanValue(k, v, m) {
-  if (m && m.scale) return (Math.round((Number(v) / m.scale) * 100) / 100) + (m.unit ? ' ' + m.unit : '');
+  // scale 是"辅助换算"：输入仍是原单位，右边多显示一句人能直接读懂的
+  if (m && m.scale) {
+    const n = Math.round((Number(v) / m.scale) * 100) / 100;
+    return '≈ ' + n + ' ' + (m.altUnit || '');
+  }
   if (m && m.unit === 'ms') return '≈ ' + fmtMs(v);
   if (m && m.min === 0 && m.max === 1) return pct(v);
   return '';
@@ -387,15 +391,10 @@ function fieldHtml(k, m) {
       <span class="muted small" data-bv="${k}">${v ? '已开启' : '已关闭'}</span></div>${help}</div>`;
   }
   if (m.type === 'number') {
-    // scale：面板显示值 = 存的值 / scale（例如毫秒 → 秒）
-    const sc = Number(m.scale) || 1;
-    const dv = (x) => (x == null ? null : Math.round((Number(x) / sc) * 100) / 100);
-    const dmin = dv(m.min), dmax = dv(m.max), dstep = m.step == null ? 1 : dv(m.step) || 1;
-    const min = dmin == null ? '' : `min="${dmin}"`, max = dmax == null ? '' : `max="${dmax}"`, step = `step="${dstep}"`;
-    const cur = dv(v) == null ? 0 : dv(v);
+    const min = m.min == null ? '' : `min="${m.min}"`, max = m.max == null ? '' : `max="${m.max}"`, step = m.step == null ? 'step="1"' : `step="${m.step}"`;
     return `<div class="field"><div class="lab">${label}</div>
-      <div class="ctl"><input type="range" data-range="${k}" ${min} ${max} ${step} value="${cur}">
-        <input class="num" type="number" data-k="${k}" data-t="number" data-scale="${sc}" ${min} ${max} ${step} value="${cur}">
+      <div class="ctl"><input type="range" data-range="${k}" ${min} ${max} ${step} value="${Number(v) || 0}">
+        <input class="num" type="number" data-k="${k}" data-t="number" ${min} ${max} ${step} value="${Number(v) || 0}">
         <span class="unit">${esc(m.unit || '')}</span><span class="muted small" data-hv="${k}">${humanValue(k, v, m)}</span></div>${help}</div>`;
   }
   if (m.type === 'enum') {
@@ -451,7 +450,7 @@ function renderParams(nav) {
     if (!hv) return;
     const raw = String(val == null ? '' : val).trim();
     if (raw === '' || Number.isNaN(Number(raw))) { hv.textContent = ''; return; }
-    hv.textContent = humanValue(k, Number(raw) * (Number(m.scale) || 1), m);
+    hv.textContent = humanValue(k, Number(raw), m);
   };
   // 草稿保护：页面重渲染（刷新/切高级参数/切开关）后把没保存的编辑填回去，
   // 之前出现过"改完人设点保存，存下去的却是旧文本"。
