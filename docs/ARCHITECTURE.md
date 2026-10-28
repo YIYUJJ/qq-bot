@@ -12,32 +12,27 @@ lib/index.js                 装配：读配置 → 创建各模块 → 挂 ctx.
    │
    ├─ 领域模块（不依赖 index）
    │   config-store   配置读写/校验/热重载
-   │   room-config    每群覆盖 + cfgFor 缓存
-   │   room-state     会话运行时状态
-   │   access         白名单闸（群/私聊/必回）
+   │   rooms          每群覆盖 + cfgFor 缓存 + 会话状态 + 白名单闸
    │   state-init     持久化容器（facts/stickers/usage/replied/outbox）
    │   memory-store   长期记忆存储（事实/相似度/选取）
    │   memory-ai      记忆模型侧（提炼/画像/摘要/关系/导出）
    │   memory-auto    自动记忆维护（阈值触发）
    │   prompt         人设/情绪/转录/系统提示词
    │   decision       回复决策（优先级/静音/概率/冷却）
-   │   model          模型调用（generate/analyze/关键词）
-   │   model-route    模型路由（对话 + 视觉，含回退缓存）
+   │   model          模型调用（generate/analyze/关键词）+ 路由（对话/视觉）
    │   notes          链接/搜索/视频链接笔记
    │   vision         视觉链路（下载→压缩→识图→写回）
    │   video-chain    视频抽帧描述 + 结果缓存
-   │   video-files    临时目录清理 + ffmpeg 路径
-   │   media-cache    识图缓存 + 媒体 key 归一
+   │   media          识图缓存 + 媒体 key 归一 + 视频临时目录/ffmpeg 路径
    │   sticker-store  图库持久化（脏标记合并写）
    │   sticker-net    图库网络（本地化/收藏/发送/维护）
    │   outbox         发送失败重试队列
    │   polling        轮询兜底（基线 + 拉取）
    │   scheduler      主动说话 + 轮询定时器
    │   startup        启动序列（连接/迁移/基线/推送/轮询）
-   │   backup         备份/软重载/重启 DSH
-   │   ops            运维（恢复/历史检索/日志尾/原子写/连接信息）
+   │   ops            运维 + 备份/软重载/重启 DSH
    │   panel-mount    面板挂载（webServer 注册 + 重试）
-   │   panel-state    面板数据拼装
+   │   panel          面板数据拼装 + 房间快照
    │   http-api       面板 API（45 个 op）
    │   register-tools 工具注册（16 个工厂）
    │
@@ -47,8 +42,7 @@ lib/index.js                 装配：读配置 → 创建各模块 → 挂 ctx.
        safe         错误隔离（safe/safeAsync/wrapTool/进程兜底）
        store        原子写/写队列/单实例锁/SQLite KV
        metrics      计数/延迟/JSONL 事件/最近事件
-       state-store  replied/usage 持久化（脏标记 + SQLite）
-       state-db     SQLite 状态库（JSON 回落）
+       state-store  replied/usage 持久化（脏标记 + SQLite 状态库 + JSON 回落）
        memory       记忆文件助手
        roomcfg      每群覆盖合并与过滤
        admin-commands  管理员指令解析
@@ -61,6 +55,8 @@ lib/index.js                 装配：读配置 → 创建各模块 → 挂 ctx.
        runtime      rooms/stats/timers/groupNames
        onebot       SnowLuma 接入
 ```
+
+当前规模：源码 67 个模块、约 9600 行（`lib/index.js` 约 962 行，其中约 130 行为装配）；测试 63 套、约 5400 行。
 
 ## 2. 依赖规则
 
@@ -101,6 +97,6 @@ replied.json / usage.json       兼容用 JSON 备份
 
 ## 6. 已知限制
 
-- `lib/index.js` 仍有约 950 行，其中约 130 行是**装配段**（有意保留：模块接线放一起更易读）。
+- `lib/index.js` 仍约 960 行，其中约 130 行是**装配段**（有意保留：模块接线放一起更易读）。
 - 面板指标卡片缺人工目视确认（API 层有测试）。
 - GitHub Release 尚未创建（需要仓库认证）。
