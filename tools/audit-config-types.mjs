@@ -1,71 +1,42 @@
 /**
- * 配置类型一致性检查：面板元数据 vs 后端默认配置/类型集合。
- * 这类不一致会导致"面板保存整页被拒"或"数字被存成字符串"。
+ * 配置 schema 一致性检查。
+ * 现在 schema 是唯一真相，这里主要防"实现漂移"：
+ *   1. 每个 meta 字段都有 default
+ *   2. 数字/布尔/csv 类型都在对应集合里
+ *   3. ROOM_KEYS 都在 meta 里且有 default
+ *   4. 默认值类型与 meta.type 吻合
  * 用法：node tools/audit-config-types.mjs
  */
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { CONFIG_META } from '../lib/meta.mjs'
-import { ROOM_KEYS } from '../lib/roomcfg.mjs'
+import { CONFIG_META, CONFIG_KEYS, DEFAULT_CONFIG, BOOLEAN, NUMERIC, LIST, ROOM_KEYS } from '../lib/schema.mjs'
 
-const ROOT = dirname(dirname(fileURLToPath(import.meta.url)))
-const src = readFileSync(join(ROOT, 'lib', 'index.js'), 'utf8')
-
-function parseSet(name) {
-  const m = src.match(new RegExp('const ' + name + ' = new Set\\(\\[([\\s\\S]*?)\\]\\)'))
-  if (!m) return new Set()
-  return new Set([...m[1].matchAll(/'([A-Za-z0-9_]+)'/g)].map((x) => x[1]))
-}
-
-const defaultBlock = src.slice(src.indexOf('const DEFAULT_CONFIG'), src.indexOf('const BOOLEAN'))
-const defaults = new Set([...defaultBlock.matchAll(/([A-Za-z_][A-Za-z0-9_]*)\s*:/g)].map((m) => m[1]))
-const BOOLEAN = parseSet('BOOLEAN')
-const NUMERIC = parseSet('NUMERIC')
-const LIST = parseSet('LIST')
-
-const metaKeys = Object.keys(CONFIG_META)
 const problems = []
 
-// 1) 面板有、默认配置没有 → 保存会被判"未知配置项"，整页失败
-for (const k of metaKeys) {
-  if (!defaults.has(k)) problems.push({ level: 'high', key: k, msg: '面板有这个字段，但 DEFAULT_CONFIG 没有 → 保存会被拒（未知配置项）' })
+for (const k of CONFIG_KEYS) {
+  const m = CONFIG_META[k]
+  if (m.default === undefined) problems.push({ level: 'high', key: k, msg: 'meta 缺 default → 默认配置不完整' })
+  if (!m.group) problems.push({ level: 'mid', key: k, msg: 'meta 缺 group → 面板不显示' })
+  if (m.type === 'number' && !NUMERIC.has(k)) problems.push({ level: 'high', key: k, msg: 'number 类型不在 NUMERIC' })
+  if (m.type === 'bool' && !BOOLEAN.has(k)) problems.push({ level: 'high', key: k, msg: 'bool 类型不在 BOOLEAN' })
+  if (m.type === 'csv' && !LIST.has(k)) problems.push({ level: 'high', key: k, msg: 'csv 类型不在 LIST' })
 }
 
-// 2) 类型不匹配 → 存成字符串/布尔判断错
-for (const [k, m] of Object.entries(CONFIG_META)) {
-  if (m.type === 'number' && !NUMERIC.has(k)) {
-    problems.push({ level: 'mid', key: k, msg: '面板是数字，但 NUMERIC 没有它 → 会按字符串存' })
-  }
-  if (m.type === 'bool' && !BOOLEAN.has(k)) {
-    problems.push({ level: 'high', key: k, msg: '面板是开关，但 BOOLEAN 没有它 → "关"可能被存成字符串真值' })
-  }
-  if ((m.type === 'csv' || m.type === 'enum') && !LIST.has(k) && !BOOLEAN.has(k) && !NUMERIC.has(k)) {
-    // enum/csv 不一定要在 LIST 里，仅提示
-    if (m.type === 'csv') problems.push({ level: 'low', key: k, msg: '面板是逗号列表，但 LIST 没有它 → 不会被拆成数组' })
-  }
-}
-
-// 3) 默认配置有、面板没有 → 界面上看不到（不是 bug，但值得知道）
-const hidden = [...defaults].filter((k) => !metaKeys.includes(k))
-
-// 4) 每群性格可覆盖的键，必须在面板元数据里有定义、在默认配置里存在
 for (const k of ROOM_KEYS) {
-  if (!CONFIG_META[k]) problems.push({ level: 'high', key: k, msg: 'ROOM_KEYS 里有它，但面板元数据没有 → 每群性格页渲染/保存会出问题' })
-  else if (!defaults.has(k)) problems.push({ level: 'high', key: k, msg: 'ROOM_KEYS 里有它，但 DEFAULT_CONFIG 没有 → 覆盖保存会被拒' })
+  if (!CONFIG_META[k]) problems.push({ level: 'high', key: k, msg: 'ROOM_KEYS 里有它，但 meta 没有 → 每群性格会出问题' })
+  else if (!(k in DEFAULT_CONFIG)) problems.push({ level: 'high', key: k, msg: 'ROOM_KEYS 里有它，但默认配置没有' })
 }
 
-// 输出
+for (const k of CONFIG_KEYS) {
+  const m = CONFIG_META[k]
+  const v = DEFAULT_CONFIG[k]
+  if (m.type === 'bool' && typeof v !== 'boolean') problems.push({ level: 'high', key: k, msg: 'bool 字段默认值不是布尔' })
+  if (m.type === 'number' && typeof v !== 'number') problems.push({ level: 'high', key: k, msg: 'number 字段默认值不是数字' })
+  if (m.type === 'csv' && !Array.isArray(v)) problems.push({ level: 'high', key: k, msg: 'csv 字段默认值不是数组' })
+}
+
 const order = { high: 0, mid: 1, low: 2 }
 problems.sort((a, b) => order[a.level] - order[b.level] || a.key.localeCompare(b.key))
-console.log(`配置类型检查：元数据 ${metaKeys.length} 项 / 默认配置 ${defaults.size} 项`)
+console.log(`配置 schema：${CONFIG_KEYS.length} 项 / 可按群覆盖 ${ROOM_KEYS.length} 项 / 布尔 ${BOOLEAN.size} / 数字 ${NUMERIC.size} / 列表 ${LIST.size}`)
 console.log('─'.repeat(78))
-if (!problems.length) console.log('✅ 没有会导致保存失败/类型错误的项')
-for (const p of problems) {
-  const mark = p.level === 'high' ? '❌' : p.level === 'mid' ? '⚠️ ' : '·'
-  console.log(`${mark} ${p.key.padEnd(24)} ${p.msg}`)
-}
-if (hidden.length) {
-  console.log('\n仅默认配置、面板不显示（正常，供内部用）：' + hidden.join(', '))
-}
+if (!problems.length) console.log('✅ schema 自洽：默认值、类型、房间键全部一致')
+for (const p of problems) console.log(`${p.level === 'high' ? '❌' : '⚠️ '} ${p.key.padEnd(24)} ${p.msg}`)
 process.exit(problems.some((p) => p.level === 'high') ? 1 : 0)

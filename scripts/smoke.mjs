@@ -109,7 +109,7 @@ await checkAsync('元数据 / 房间键一致', async () => {
   const missing = room.ROOM_KEYS.filter((k) => !keys.includes(k))
   if (missing.length) throw new Error('ROOM_KEYS 里有配置不存在的键: ' + missing.join(', '))
   const groups = new Set(meta.GROUPS.map((g) => g.id))
-  const badGroup = keys.filter((k) => !groups.has(meta.CONFIG_META[k].group))
+  const badGroup = keys.filter((k) => !meta.CONFIG_META[k].hidden && !groups.has(meta.CONFIG_META[k].group))
   if (badGroup.length) throw new Error('字段指向不存在的分组: ' + badGroup.slice(0, 5).join(', '))
   return `${keys.length} 项 / ${meta.GROUPS.length} 组 / 覆盖 ${room.ROOM_KEYS.length} 项`
 })
