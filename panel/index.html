@@ -545,7 +545,8 @@ function renderParams(nav) {
       const msg = '已保存 ' + Object.keys(r.applied || {}).length + ' 项'
         + (skipped.length ? `（${skipped.length} 项为空已跳过）` : '')
         + (adjusted.length ? `；${adjusted.length} 项按范围调整：${adjusted.slice(0, 3).join('、')}` : '');
-      toast(msg, 'ok');
+      toast(msg, 'ok')
+    if (r && r.rejected && Object.keys(r.rejected).length) toast('部分字段未保存：' + Object.keys(r.rejected).join('、'), 'err');
       const hintEl = $('#save-hint');
       if (hintEl) hintEl.textContent = '已保存 ' + new Date().toLocaleTimeString('zh-CN', { hour12: false });
       await refresh();
