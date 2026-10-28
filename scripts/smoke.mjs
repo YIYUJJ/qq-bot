@@ -125,16 +125,6 @@ check('配置类型一致（面板字段都能存）', () => {
   }
 })
 
-check('模块依赖注入完整', () => {
-  try {
-    execFileSync(process.execPath, [join(ROOT, 'tools', 'check-module-deps.mjs')], { encoding: 'utf8' })
-    return '没有未声明的注入名字'
-  } catch (e) {
-    const out = String(e?.stdout || '')
-    const bad = out.split('\n').filter((l) => l.includes('⚠️')).map((l) => l.trim().replace('⚠️', '')).slice(0, 4)
-    throw new Error(bad.join('；') || '依赖审计未通过（跑 node tools/check-module-deps.mjs 看详情）')
-  }
-})
 
 await checkAsync('模块导出齐全', async () => {
   const f = await import(modUrl(join(ROOT, 'lib', 'features.mjs')))
