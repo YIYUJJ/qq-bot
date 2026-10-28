@@ -65,9 +65,17 @@ export function auditFile(file) {
   }
   for (const m of src.matchAll(/^import \{([^}]+)\}/gm)) for (const n of names(m[1])) known.add(n)
 
-  const props = new Set([...src.matchAll(/(?<![.\w$])([A-Za-z_$][\w$]*)\s*:/g)].map((m) => m[1]))
+  // 只作为对象键出现（props）与作为值出现（uses）要区分：
+  // 名字若同时被当作值使用，就不能因为	extquoteright{}它当过键	extquoteright{}而放过。
+  const props = new Set()
+  const uses = new Set()
+  for (const m of src.matchAll(/(?<![.\w$])([A-Za-z_$][\w$]*)\s*(\:)?/g)) {
+    if (m[2]) props.add(m[1])
+    else uses.add(m[1])
+  }
+  const keyOnly = (t) => props.has(t) && !uses.has(t)
   const tokens = new Set([...src.matchAll(/(?<![.\w$])([A-Za-z_$][\w$]*)/g)].map((m) => m[1]))
-  return [...tokens].filter((t) => indexNames.has(t) && !deps.has(t) && !known.has(t) && !KW.has(t) && !props.has(t)).sort()
+  return [...tokens].filter((t) => indexNames.has(t) && !deps.has(t) && !known.has(t) && !KW.has(t) && !keyOnly(t)).sort()
 }
 
 export function main() {
