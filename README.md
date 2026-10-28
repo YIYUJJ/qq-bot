@@ -134,6 +134,13 @@ tools/          static-scan.cjs（开发用）
 - 管理员指令需要二次确认
 - **不要提交** `~/.dsh/qq-bot/config.json`（里面有 token）
 
+## 文档
+
+- [INSTALL.md](./INSTALL.md)：给人看的安装步骤
+- [AGENTS.md](./AGENTS.md)：给 AI 看的安装流程
+- [docs/TESTING.md](./docs/TESTING.md)：测试与排查手册
+- [docs/PITFALLS.md](./docs/PITFALLS.md)：踩坑记录（含已加的检查）
+
 ## License
 
 MIT

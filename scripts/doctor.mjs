@@ -80,6 +80,28 @@ if (cfg) {
   else info('模型', '留空 = 用 DSH 当前默认模型')
 }
 
+/* ── 4.5 模型路由 ── */
+if (cfg) {
+  const prov = String(cfg.provider || '').trim()
+  const mdl = String(cfg.model || '').trim()
+  if (!prov || !mdl) {
+    info('模型路由', '留空 = 用 DSH 默认模型（默认 provider 没登录时，所有回复都会是空的）')
+  } else {
+    ok('模型路由', prov + '/' + mdl)
+  }
+  // 最近日志里有没有"生成失败"
+  const modelLog = join(DATA, 'bot.log')
+  if (existsSync(modelLog)) {
+    const lines = readFileSync(modelLog, 'utf8').split(/\r?\n/).filter(Boolean).slice(-300)
+    const fail = lines.filter((l) => l.includes('生成失败'))
+    if (fail.length) {
+      bad('最近的模型错误', fail.length + ' 条「生成失败」', '检查 provider 是否可用：qqbot_llm_models / 面板「诊断」页')
+    } else {
+      ok('最近的模型错误', '近 300 行日志里没有「生成失败」')
+    }
+  }
+}
+
 /* ── 5. SnowLuma 配置 ── */
 const snow = String(cfg?.snowlumaHome || 'C:/SnowLuma').replace(/\\/g, '/')
 let accounts = []
