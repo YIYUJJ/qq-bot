@@ -625,6 +625,8 @@ async function renderStickerExtra() {
   card.insertAdjacentHTML('beforeend', roomSel);
   card.insertAdjacentHTML('beforeend', `<div class="row" style="margin-top:8px">
     <input type="text" id="sticker-q" placeholder="搜索来源 / 编号" style="flex:1;min-width:180px">
+    <button class="btn" id="sticker-clean-bad" title="删掉所有失效的（QQ 链接过期）">删失效</button>
+    <button class="btn" id="sticker-clean-image" title="删掉所有 subType=0 的普通图片">删普通图</button>
     <select id="sticker-sort">
       <option value="new">最新优先</option>
       <option value="hot">最常用优先</option>
@@ -641,9 +643,20 @@ async function renderStickerExtra() {
     b.innerHTML = arr.length
       ? arr.map(s => `<label class="chip" style="cursor:pointer;${s.bad ? 'opacity:.42' : ''}" data-send="${esc(s.id)}" title="${s.bad ? '已失效（QQ 图片链接过期）' : (s.subType ? 'QQ 表情包' : '普通图片')}，点一下发出去">
           ${s.hasFile ? `<img src="/qq-bot/api/thumb?id=${encodeURIComponent(s.id)}" alt="" loading="lazy" style="height:44px;border-radius:6px;display:block" onerror="this.style.display='none'">` : (s.url ? `<img src="${esc(s.url)}" alt="" loading="lazy" style="height:44px;border-radius:6px;display:block" onerror="this.style.display='none'">` : '<span style="font-size:26px;line-height:44px">🖼</span>')}
-          <span class="small muted">${s.bad ? '失效' : s.favorite ? '★收藏' : s.subType ? '表情' : '图片'}${s.uses ? ' · ' + s.uses : ''}</span></label>`).join('')
+          <span class="small muted">${s.bad ? '失效' : s.favorite ? '★收藏' : s.subType ? '表情' : '图片'}${s.uses ? ' · ' + s.uses : ''}</span>
+          <button class="btn" data-del="${esc(s.id)}" title="从图库删除" style="padding:1px 6px;font-size:11px;line-height:1.4;margin-left:2px">×</button></label>`).join('')
       : '<span class="muted">没有匹配的表情。</span>';
-    $$('[data-send]').forEach(el => el.onclick = async () => {
+    $('[data-del]').forEach(el => el.onclick = async (ev) => {
+      ev.preventDefault(); ev.stopPropagation();
+      if (!confirm('从图库删除这张？')) return;
+      try {
+        await action('sticker.delete', { id: el.dataset.del });
+        App.stickers = (App.stickers || []).filter(x => x.id !== el.dataset.del);
+        toast('已删除', 'ok');
+        renderChips();
+      } catch (e) { toast('删除失败：' + e.message, 'err'); }
+    });
+    $('[data-send]').forEach(el => el.onclick = async () => {
       const room = ($('#sticker-room') || {}).value;
       if (!room) return toast('没有授权群', 'err');
       const item = (App.stickers || []).find(x => x.id === el.dataset.send);
