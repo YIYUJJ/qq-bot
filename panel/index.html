@@ -383,39 +383,42 @@ function renderFeatures() {
 
 /* ── 参数表单 ─────────────────────────────────────── */
 function humanValue(k, v, m) {
-  // 左：原始小单位（精确）；右：换成人一眼能读懂的（每个数字字段都有）
+  // 原则：只有"换个说法确实更好懂"才显示；同单位重复、几十几百的计数一律不显示
   const n = Number(v);
   if (v == null || v === '' || !Number.isFinite(n)) return '';
   const abs = Math.abs(n);
 
-  // 毫秒 → 秒/分钟/小时
+  // 毫秒：不足 1 秒保留毫秒（更精确），不再重复显示
   if (m && (m.unit === '毫秒' || /Ms$/.test(k) || m.scale)) {
-    if (abs < 1000) return '≈ ' + (Math.round(n * 10) / 10) + ' 毫秒';
+    if (abs < 1000) return '';
     if (abs < 60000) return '≈ ' + (Math.round((n / 1000) * 10) / 10) + ' 秒';
     if (abs < 3600000) return '≈ ' + (Math.round((n / 60000) * 10) / 10) + ' 分钟';
     return '≈ ' + (Math.round((n / 3600000) * 10) / 10) + ' 小时';
   }
-  // 秒 → 分钟/小时
+  // 秒：不足 1 分钟不换算
   if (m && m.unit === '秒') {
-    if (abs < 60) return '= ' + n + ' 秒';
+    if (abs < 60) return '';
     if (abs < 3600) return '≈ ' + (Math.round((n / 60) * 10) / 10) + ' 分钟';
     return '≈ ' + (Math.round((n / 3600) * 10) / 10) + ' 小时';
   }
-  // 字节 / MB
-  if (m && (m.unit === '字节' || /Bytes$/.test(k))) return '≈ ' + fmtBytes(n);
-  if (m && m.unit === 'MB') {
-    if (abs >= 1024) return '≈ ' + (Math.round((n / 1024) * 10) / 10) + ' GB';
-    return '= ' + n + ' MB';
+  // 字节：不足 1KB 不换算
+  if (m && (m.unit === '字节' || /Bytes$/.test(k))) {
+    if (abs < 1024) return '';
+    return '≈ ' + fmtBytes(n);
   }
-  // 概率 0~1
+  // MB：不足 1024MB 不换算
+  if (m && m.unit === 'MB') {
+    return abs >= 1024 ? '≈ ' + (Math.round((n / 1024) * 10) / 10) + ' GB' : '';
+  }
+  // 概率 → 百分比
   if (m && m.min === 0 && m.max === 1) return pct(n);
-  // 大数
+  // 只有大数才换万/亿
   if (abs >= 100000000) return '≈ ' + (n / 100000000).toFixed(1).replace(/\.0$/, '') + ' 亿';
   if (abs >= 10000) return '≈ ' + (n / 10000).toFixed(1).replace(/\.0$/, '') + ' 万';
-  if (abs >= 1000) return '= ' + n.toLocaleString('zh-CN');
-  // 其余：带上单位，保证右侧永远有东西
-  return m && m.unit ? '= ' + n + ' ' + m.unit : '= ' + n;
+  // 其它（几条、几行、几个字、几百毫秒）本来就是最直观的，不再重复
+  return '';
 }
+
 
 
 
