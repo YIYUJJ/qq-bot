@@ -114,6 +114,17 @@ await checkAsync('元数据 / 房间键一致', async () => {
   return `${keys.length} 项 / ${meta.GROUPS.length} 组 / 覆盖 ${room.ROOM_KEYS.length} 项`
 })
 
+check('配置类型一致（面板字段都能存）', () => {
+  try {
+    execFileSync(process.execPath, [join(ROOT, 'tools', 'audit-config-types.mjs')], { encoding: 'utf8' })
+    return '面板字段与后端类型一致'
+  } catch (e) {
+    const out = String(e?.stdout || '')
+    const bad = out.split('\n').filter((l) => l.includes('❌')).map((l) => l.trim().replace('❌', '')).slice(0, 4)
+    throw new Error(bad.join('；') || '配置类型不一致（跑 node tools/audit-config-types.mjs 看详情）')
+  }
+})
+
 await checkAsync('模块导出齐全', async () => {
   const f = await import(modUrl(join(ROOT, 'lib', 'features.mjs')))
   const e = await import(modUrl(join(ROOT, 'lib', 'extras.mjs')))
