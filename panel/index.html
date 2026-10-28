@@ -373,14 +373,27 @@ function renderFeatures() {
 
 /* ── 参数表单 ─────────────────────────────────────── */
 function humanValue(k, v, m) {
-  // scale 是"辅助换算"：输入仍是原单位，右边多显示一句人能直接读懂的
+  // 每个数字字段都给一句"人话"：能换算就换算，不能换算就给可读格式
+  const n = Number(v);
+  if (v == null || v === '' || !Number.isFinite(n)) return '';
   if (m && m.scale) {
-    const n = Math.round((Number(v) / m.scale) * 100) / 100;
-    return '≈ ' + n + ' ' + (m.altUnit || '');
+    return '≈ ' + (Math.round((n / m.scale) * 100) / 100) + ' ' + (m.altUnit || '');
   }
-  if (m && m.unit === 'ms') return '≈ ' + fmtMs(v);
-  if (m && m.min === 0 && m.max === 1) return pct(v);
-  return '';
+  if (m && (m.unit === '毫秒' || /Ms$/.test(k))) return '≈ ' + fmtMs(n);
+  if (m && (m.unit === '字节' || /Bytes$/.test(k))) return '≈ ' + fmtBytes(n);
+  if (m && m.min === 0 && m.max === 1) return pct(n);
+  if (Math.abs(n) >= 100000000) return '≈ ' + (n / 100000000).toFixed(1).replace(/\.0$/, '') + ' 亿';
+  if (Math.abs(n) >= 10000) return '≈ ' + (n / 10000).toFixed(1).replace(/\.0$/, '') + ' 万';
+  if (Math.abs(n) >= 1000) return '= ' + n.toLocaleString('zh-CN');
+  return (m && m.unit) ? '= ' + n + ' ' + m.unit : '= ' + n;
+}
+
+function fmtBytes(n) {
+  const b = Number(n) || 0;
+  if (b >= 1024 * 1024 * 1024) return (Math.round((b / 1024 / 1024 / 1024) * 100) / 100) + ' GB';
+  if (b >= 1024 * 1024) return (Math.round((b / 1024 / 1024) * 100) / 100) + ' MB';
+  if (b >= 1024) return (Math.round((b / 1024) * 100) / 100) + ' KB';
+  return b + ' 字节';
 }
 function fieldHtml(k, m) {
   const S = App.S, v = S.config[k];
