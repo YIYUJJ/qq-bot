@@ -14,7 +14,7 @@ jobs:
           node-version: '22'
           cache: npm
       - name: 安装开发依赖（仅 eslint）
-        run: npm ci
+        run: npm ci --omit=optional  # 向量模型依赖（约 450MB）是可选的，CI 不需要
       - name: 静态检查（no-undef / 死代码）
         run: npm run lint
       - name: 单元 + 集成测试

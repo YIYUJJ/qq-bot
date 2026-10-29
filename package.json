@@ -72,5 +72,8 @@
   "homepage": "https://github.com/YIYUJJ/qq-bot#readme",
   "devDependencies": {
     "eslint": "^9.39.5"
+  },
+  "optionalDependencies": {
+    "@huggingface/transformers": "^4.3.2"
   }
 }
