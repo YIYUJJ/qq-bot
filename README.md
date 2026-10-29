@@ -26,53 +26,31 @@ QQ 群 ──▶ SnowLuma (OneBot v11) ──▶ 插件
 |---|---|
 | 对话 | 人设、情绪状态、长度浮动、拆句、去 AI 味、@ 与引用回复、防重复 |
 | 记忆 | 长期事实（相似度去重 + 归档）、画像、摘要、群内关系、每日日记 + 自述、亲密度 |
+| 记忆增强 | 聊天原文归档、人物卡、每日摘要、到期跟进、语义检索（本地向量模型 `Xenova/bge-base-zh-v1.5`，不花 token） |
+| 记忆深化 | 反思归纳出"更深一层的认识"、记住变化、情绪权重、「我们之间的故事」、联想、每晚整理（可撤销）、来源与把握度、偶尔想起往事 |
 | 多模态 | 识图（含表情包）、视频抽帧 + 画面描述、视频链接解析、文档读取（txt/docx/xlsx/pdf）、合并转发解析、网页摘要 |
 | 互动 | 小游戏（骰子/猜拳/抽签/猜谜）、投票、定时提醒、撤回、拍一拍 |
 | 运维 | 面板（参数/每群性格/记忆/表情库/曲线/日志）、备份恢复、每日自动备份、用量统计、健康自检 |
 | 安全 | 白名单硬约束、默认关闭、只监听 127.0.0.1、管理员遥控需二次确认 |
 
-> **第一次装？看 [INSTALL.md](./INSTALL.md)** —— 你只负责装 DSH + SnowLuma 并扫码，剩下的交给 AI（读 [AGENTS.md](./AGENTS.md) 自动完成）。
+## 安装：把仓库地址交给 DeepSeek
 
-## 安装
+装好 DSH 和 SnowLuma、在 SnowLuma 里扫码登录 QQ 之后，在 DSH 里对 DeepSeek 说：
 
-### 1. 前置
-
-- 已安装 DSH Desktop（或能运行 DSH）
-- 已安装 SnowLuma 并登录 QQ，开启 OneBot v11 的 HTTP + WebSocket
-- 一个支持图片的模型（识图需要；纯文本模型也能跑）
-
-### 2. 装插件
-
-```bash
-# 假设 clone 到 D:\dpswork\packages\dsh-qq-bot
-cd <DSH profile 目录>
-pnpm add link:../path/to/dsh-qq-bot
+```
+帮我安装这个 QQ 机器人：https://github.com/YIYUJJ/qq-bot
+按仓库里 AGENTS.md 的步骤来。群号 <群号>，管理员 QQ <你的QQ>。
 ```
 
-重启 DSH，在插件列表里启用 `dsh-qq-bot`。
+它会下载 `main` 分支的最新代码、检查环境、**中途停下来把风险列给你确认**，然后装插件、写配置、改 SnowLuma 配置（先问你能不能重启 SnowLuma）、体检。
 
-### 3. 配置 SnowLuma
+- **想全程不停**：一次性提供群号、管理员 QQ、是否允许重启 SnowLuma，并写明同意风险。完整模板和需要准备的东西见 [INSTALL.md](./INSTALL.md)。
+- **AI 照着做的说明书**：[AGENTS.md](./AGENTS.md)（DSH 技能版：[`.agents/skills/install-qq-bot`](./.agents/skills/install-qq-bot/SKILL.md)）。
+- **手动安装**：见 [INSTALL.md](./INSTALL.md#手动安装不用-ai)。
 
-`onebot_<QQ号>.json` 里需要：
+### 第一次配置
 
-```jsonc
-{
-  "http":  { "enable": true, "host": "127.0.0.1", "port": 3000, "token": "你的token" },
-  "ws":    { "enable": true, "host": "127.0.0.1", "port": 3001 },
-  "httpClients": [{
-    "enable": true,
-    "url": "http://127.0.0.1:3101/qq-bot/push",
-    "secret": "",
-    "message": true, "notice": true, "request": false, "meta_event": false
-  }]
-}
-```
-
-改完**手动重启 SnowLuma**（改配置不会热生效）。
-
-### 4. 第一次配置
-
-打开面板（DSH Web 界面的 `http://127.0.0.1:<DSH 端口>/qq-bot`；3101 是推送端口，不是面板），至少填：
+在 DSH 左侧栏点「QQ 机器人」（小鲸鱼图标）打开面板（3101 是推送端口，不是面板），至少确认：
 
 | 配置 | 说明 |
 |---|---|
@@ -95,7 +73,7 @@ pnpm add link:../path/to/dsh-qq-bot
 ## 开发与测试
 
 ```bash
-node scripts/run-tests.mjs   # 全部单元 + 集成测试（63 套）
+node scripts/run-tests.mjs   # 全部单元 + 集成测试（69 套）
 node scripts/smoke.mjs       # 冒烟：语法 → 配置一致性 → 依赖审计 → 插件存活 → 网关/端口
 node scripts/smoke.mjs --quick
 node scripts/doctor.mjs      # 环境体检：配置/连接/白名单/模型路由/日志
@@ -112,6 +90,8 @@ lib/
   state-init.mjs    持久化容器（facts / stickers / usage / replied / outbox）
   memory-store.mjs  长期记忆存储     memory-ai.mjs  记忆的模型侧
   memory-auto.mjs   自动记忆维护     prompt.mjs     人设 / 情绪 / 系统提示词
+  memory-plus.mjs   记忆增强（原文归档 chat-log / 人物卡 / 每日摘要 / 跟进），embed.mjs 语义检索
+  deep*.mjs / memory-deep.mjs   记忆深化（反思 / 变化线 / 故事 / 联想 / 每晚整理 / 想起往事）
   decision.mjs      回复决策         model.mjs      模型调用与路由
   notes.mjs         链接 / 搜索笔记  vision.mjs     识图链路
   video-chain.mjs   视频抽帧描述     media.mjs      识图缓存 / 媒体 key / ffmpeg
