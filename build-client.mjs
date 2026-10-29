@@ -23,6 +23,14 @@ const panelEnd = beforeScript.lastIndexOf('</div>')
 if (panelStart < 0 || panelEnd < panelStart) throw new Error('panel/index.html 里找不到 #qq-panel 容器')
 const panelDom = html.slice(panelStart, panelEnd + '</div>'.length)
 
+// DSH 侧边栏入口的图标：和面板里同一只小鲸鱼（简化版，固定颜色；不用 id，免得和宿主页面冲突）
+const WHALE_ICON = '<svg viewBox="0 0 124 100" width="18" height="15" aria-hidden="true" style="display:block">' +
+  '<path fill="#4F9AEE" d="M92 58C100 56 104 50 106 42C100 40 96 34 96 28C102 30 106 34 108 38C110 32 114 28 120 26C118 34 114 40 110 44C108 54 102 64 92 70Z"/>' +
+  '<path fill="#66B1F7" d="M14 62C14 38 34 26 58 26C82 26 98 40 98 60C98 78 82 88 58 88C32 88 14 80 14 62Z"/>' +
+  '<path fill="#E2F2FF" d="M19 72C30 80 46 82 58 82C72 82 85 79 94 72C90 82 76 88 58 88C36 88 23 82 19 72Z"/>' +
+  '<ellipse fill="#1D2B3F" cx="36" cy="52" rx="5" ry="6"/><circle fill="#fff" cx="37.8" cy="49.8" r="1.9"/>' +
+  '<path fill="none" stroke="#8FD3FF" stroke-width="5" stroke-linecap="round" d="M53 24c0-6-3-10-8-12M53 24c0-6 3-10 8-12"/></svg>'
+
 const out = `window.__ModuleLoader__.load({
   id: "@dsh-external/dsh-qq-bot",
   factory: (require) => {
@@ -35,8 +43,9 @@ const out = `window.__ModuleLoader__.load({
     const PANEL_DOM = ${JSON.stringify(panelDom)};
     const PANEL_JS = ${JSON.stringify(panelJs)};
 
+    const WHALE_ICON = ${JSON.stringify(WHALE_ICON)};
     function QqBotIcon() {
-      return react.createElement("span", { style: { fontSize: 16, lineHeight: 1 } }, "🐳");
+      return react.createElement("span", { style: { display: "inline-flex", lineHeight: 0 }, dangerouslySetInnerHTML: { __html: WHALE_ICON } });
     }
 
     /** 面板整页：React 空壳 + 挂载时注入 DOM（与微信插件同款迁移法）。 */

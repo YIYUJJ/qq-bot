@@ -65,6 +65,24 @@ check('面板脚本语法', () => {
   return '内联脚本可解析'
 })
 
+check('面板脚本无未定义 / 先用后定义的变量', () => {
+  try {
+    execFileSync(process.execPath, [join(ROOT, 'tools', 'check-panel-undef.mjs')], { encoding: 'utf8' })
+    return '用到的名字都有定义，也没有先用后定义'
+  } catch (e) {
+    const out = String(e?.stdout || '')
+    const bad = out.split('\n').filter((l) => l.includes('❌')).map((l) => l.trim().replace('❌', '')).slice(0, 4)
+    throw new Error(bad.join('；') || '检查失败（跑 node tools/check-panel-undef.mjs 看详情）')
+  }
+})
+
+await checkAsync('面板防回归', async () => {
+  const { panelGuards } = await import(modUrl(join(ROOT, 'tools', 'check-panel-guards.mjs')))
+  const bad = panelGuards(readFileSync(join(ROOT, 'panel', 'index.html'), 'utf8'), readFileSync(join(ROOT, 'panel', 'panel.css'), 'utf8'))
+  if (bad.length) throw new Error(bad.slice(0, 3).join('；'))
+  return '修过的面板 bug 没再出现（$ 接 forEach、开关圆点、按钮没绑、页头残留、CSS 外泄、hidden 失效）'
+})
+
 if (!CI) check('面板产物不是旧的', () => {
   const a = join(ROOT, 'panel', 'index.html')
   const b = join(ROOT, 'lib', 'client.js')

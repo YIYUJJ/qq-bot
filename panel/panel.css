@@ -1,283 +1,710 @@
-  /* 配色跟随 DSH 主题 token；取不到时回落到浅色系（独立打开也好看） */
+  /* ════════════════════════════════════════════════════════════════════
+     QQ 机器人控制台 · 圆润可爱风（小鲸鱼）
+     颜色全部跟随 DSH 主题变量；单独打开 /qq-bot 时用下面的兜底色（跟系统浅色 / 深色）。
+     所有规则都限定在 #qq-panel 里，嵌进 DSH 时不影响宿主界面。
+     ════════════════════════════════════════════════════════════════════ */
   #qq-panel{
-    --bg: var(--dsw-alias-bg-base, #F6F7F9);
-    --bg-deep: var(--dsw-alias-bg-layer-2, #EEF0F3);
-    --card: var(--dsw-alias-bg-layer-1, #FFFFFF);
-    --text: var(--dsw-alias-label-primary, #1F2328);
-    --muted: var(--dsw-alias-label-secondary, #57606A);
-    --line: var(--dsw-alias-border-l1, #D0D7DE);
-    --line-2: var(--dsw-alias-border-l2, #E6EAEF);
-    --accent: var(--dsw-alias-brand-primary, #0969DA);
-    --ok: var(--dsw-alias-state-success-primary, #1A7F37);
-    --warn: var(--dsw-alias-state-warn-primary, #9A6700);
-    --bad: var(--dsw-alias-state-error-primary, #CF222E);
+    --fb-bg:#F3F7FC; --fb-card:#FFFFFF; --fb-deep:#E9F0F8; --fb-text:#1E2A3A; --fb-muted:#5F6E80;
+    --fb-line:#D8E2EE; --fb-line2:#E7EEF6; --fb-accent:#3B86F7; --fb-ok:#18A058; --fb-warn:#C27C0E; --fb-bad:#E5484D;
+    --bg: var(--dsw-alias-bg-base, var(--fb-bg));
+    --card: var(--dsw-alias-bg-layer-1, var(--fb-card));
+    --bg-deep: var(--dsw-alias-bg-layer-2, var(--fb-deep));
+    --text: var(--dsw-alias-label-primary, var(--fb-text));
+    --muted: var(--dsw-alias-label-secondary, var(--fb-muted));
+    --line: var(--dsw-alias-border-l1, var(--fb-line));
+    --line-2: var(--dsw-alias-border-l2, var(--fb-line2));
+    --accent: var(--dsw-alias-brand-primary, var(--fb-accent));
+    --ok: var(--dsw-alias-state-success-primary, var(--fb-ok));
+    --warn: var(--dsw-alias-state-warn-primary, var(--fb-warn));
+    --bad: var(--dsw-alias-state-error-primary, var(--fb-bad));
+    /* 泡泡色：在强调色上调出来的几档淡色（浅色主题是奶白浅蓝，深色主题自动变深） */
+    --bubble: color-mix(in srgb, var(--accent) 8%, var(--card));
+    --bubble-2: color-mix(in srgb, var(--accent) 15%, var(--card));
+    --bubble-3: color-mix(in srgb, var(--accent) 24%, var(--card));
     --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
-    --ok-soft: color-mix(in srgb, var(--ok) 16%, transparent);
-    --warn-soft: color-mix(in srgb, var(--warn) 18%, transparent);
-    --bad-soft: color-mix(in srgb, var(--bad) 14%, transparent);
-    --teal: var(--dsw-alias-state-success-primary, #1B7C83);
-    --chip: var(--dsw-alias-bg-layer-2, #F0F2F5);
-    --shadow: 0 1px 2px rgba(0,0,0,.06);
-    --shadow-md: 0 4px 16px rgba(0,0,0,.10);
-    --radius: 8px;
+    --ok-soft: color-mix(in srgb, var(--ok) 15%, transparent);
+    --warn-soft: color-mix(in srgb, var(--warn) 17%, transparent);
+    --bad-soft: color-mix(in srgb, var(--bad) 13%, transparent);
+    --chip: var(--bg-deep);
+    --r-card: 18px; --r-ctl: 12px; --r-pill: 999px;
+    /* 阴影色：一点点强调色 + 深蓝黑。不能用文字色调——深色主题下文字是白的，阴影会变成一圈白光 */
+    --shade: color-mix(in srgb, var(--accent) 22%, #0B1424);
+    --shadow: 0 1px 2px color-mix(in srgb, var(--shade) 7%, transparent), 0 6px 18px color-mix(in srgb, var(--shade) 8%, transparent);
+    --shadow-up: 0 2px 6px color-mix(in srgb, var(--shade) 9%, transparent), 0 14px 32px color-mix(in srgb, var(--shade) 15%, transparent);
+    --shadow-pop: 0 18px 50px color-mix(in srgb, var(--shade) 24%, transparent);
+    --scrim: color-mix(in srgb, var(--shade) 28%, transparent);
+    --ease: cubic-bezier(.2,.8,.2,1);
+    --spring: cubic-bezier(.34,1.56,.64,1);
+    --dur: 180ms;
+    /* 小鲸鱼的颜色（"蓝色大肥鱼"，不跟强调色走） */
+    --wh-body: #66B1F7; --wh-tail: #4F9AEE; --wh-fin: #4690E4; --wh-belly: #E2F2FF; --wh-eye: #1D2B3F;
+    --wh-cheek: #FF9CB4; --wh-mouth: #E9667F; --wh-spout: #8FD3FF; --wh-water: #A4D8FF; --wh-star: #FFC94D;
+    /* 加载占位条 */
+    --sk-1: color-mix(in srgb, var(--text) 7%, var(--card));
+    --sk-2: color-mix(in srgb, var(--text) 3%, var(--card));
   }
-  #qq-panel,#qq-panel *{box-sizing:border-box}
-  /* 只在独立打开时接管整页；嵌进 DSH 时不许动宿主布局 */
+  /* 深色主题：由脚本看卡片底色判断（DSH 切深色、单独打开时系统深色都算） */
+  #qq-panel[data-tone="dark"]{
+    --shade: #000;
+    --shadow: 0 1px 2px rgba(0,0,0,.32), 0 6px 18px rgba(0,0,0,.22);
+    --shadow-up: 0 2px 6px rgba(0,0,0,.36), 0 14px 32px rgba(0,0,0,.34);
+    --shadow-pop: 0 18px 50px rgba(0,0,0,.55);
+    --scrim: rgba(0,0,0,.45);
+    --wh-body: #5AA6EE; --wh-tail: #3F88DA; --wh-fin: #3A82D3; --wh-belly: #CBE5FB; --wh-eye: #0E1726;
+    --wh-cheek: #F48FA9; --wh-water: #6FB4EC;
+  }
+  @media (prefers-color-scheme: dark){
+    #qq-panel{
+      --fb-bg:#0E1622; --fb-card:#152131; --fb-deep:#1B2A3D; --fb-text:#E4ECF6; --fb-muted:#94A5BA;
+      --fb-line:#283A50; --fb-line2:#213245; --fb-accent:#5CA2FF; --fb-ok:#3DD68C; --fb-warn:#F0B44C; --fb-bad:#FF6B6E;
+    }
+  }
+
+  /* ── 外框 ── */
   html{height:100%}
   body:not(.qq-embed-host){margin:0;padding:0;height:100%;overflow:hidden}
-  #qq-panel{height:100%;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;
-    background:var(--bg);color:var(--text);
-    font:15px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",system-ui,sans-serif;
-    font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale}
-
-  .qq-panel-root button,.qq-panel-root input,.qq-panel-root select,.qq-panel-root textarea{font:inherit;color:inherit}
-  #qq-panel a{color:var(--accent);text-underline-offset:3px}
-  #qq-panel a:hover{text-decoration:underline}
-
-  #qq-panel header{position:static;z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;flex:0 0 auto;
-    padding:0 20px;height:52px;background:var(--card);border-bottom:1px solid var(--line)}
-  .brand{font-weight:600;font-size:14px;white-space:nowrap;letter-spacing:-.01em}
-  .brand small{color:var(--muted);font-weight:400;margin-left:6px;font-size:12px}
-  .pills{display:flex;gap:6px;flex-wrap:wrap;flex:1}
-  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:999px;
-    background:var(--chip);font-size:12px;color:var(--muted);border:1px solid var(--line-2);white-space:nowrap}
-  .pill b{font-weight:500;color:var(--text)}
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
-  .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
-  .hswitch{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);white-space:nowrap}
-
-  #qq-panel .shell{display:flex;flex:1 1 auto;min-height:0}
-  /* 侧栏用白底 + 内容区灰底 → 分区清楚 */
-  #qq-panel nav{width:200px;flex:0 0 200px;padding:14px 10px;border-right:1px solid var(--line);
-    background:var(--card);position:static;height:auto;overflow:auto}
-  #qq-panel nav a{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--radius);color:var(--text);
-    text-decoration:none;font-size:13.5px;margin-bottom:1px;transition:background .12s,color .12s}
-  #qq-panel nav a:hover{background:var(--bg-deep);text-decoration:none}
-  #qq-panel nav a.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
-  #qq-panel main{flex:1;min-width:0;width:100%;padding:24px 28px 72px;overflow:auto;min-height:0}
-
-  /* 嵌进 DSH 原生界面（lib/client.js 的 React 容器）时：
-     外层高度固定，滚动必须交给我们自己的 flex 布局 */
   .qq-panel-embed{height:100%;display:flex;flex-direction:column;min-height:0;overflow:hidden}
-  .qq-panel-embed header{position:static;flex:0 0 auto}
-  .qq-panel-embed .shell{flex:1 1 auto;min-height:0}
-  .qq-panel-embed nav{overflow:auto;height:auto}
-  .qq-panel-embed main{overflow:auto;min-height:0}
+  #qq-panel,#qq-panel *{box-sizing:border-box}
+  #qq-panel [hidden]{display:none!important}
+  #qq-panel{position:relative;height:100%;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;overflow:hidden;
+    background:var(--bg);color:var(--text);
+    font:14.5px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    font-feature-settings:"tnum" 1;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  #qq-panel button,#qq-panel input,#qq-panel select,#qq-panel textarea{font:inherit;color:inherit}
+  #qq-panel a{color:var(--accent);text-decoration:none}
+  #qq-panel a:hover{text-decoration:underline;text-underline-offset:3px}
+  #qq-panel :focus-visible{outline:2px solid color-mix(in srgb,var(--accent) 70%,transparent);outline-offset:2px}
+  #qq-panel ::selection{background:var(--accent-soft)}
+  #qq-panel ::-webkit-scrollbar{width:10px;height:10px}
+  #qq-panel ::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--muted) 28%,transparent);border-radius:99px;border:3px solid transparent;background-clip:content-box}
+  #qq-panel ::-webkit-scrollbar-track{background:transparent}
 
-  .banner{display:none;padding:11px 14px;border-radius:var(--radius);margin-bottom:16px;font-size:13px;
-    border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow)}
-  .banner.show{display:block}
-  .banner.bad{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 35%,var(--line));color:var(--bad)}
-  .banner.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 35%,var(--line));color:var(--warn)}
+  /* ── 顶栏 ── */
+  #qq-panel header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex:0 0 auto;min-height:58px;padding:9px 20px;
+    background:var(--card);border-bottom:1px solid var(--line-2)}
+  #qq-panel .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15.5px;white-space:nowrap;letter-spacing:-.01em}
+  #qq-panel .brand .whale{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:19px;
+    background:linear-gradient(145deg,var(--bubble-2),var(--bubble));box-shadow:inset 0 0 0 1px var(--line-2)}
+  #qq-panel .brand .whale .wh{width:29px!important;margin:1px 0 0 1px}
+  #qq-panel .brand small{color:var(--muted);font-weight:500;font-size:11.5px}
+  #qq-panel .brand .url{font-family:ui-monospace,Consolas,monospace;font-size:11px;opacity:.75;cursor:pointer;display:none}
+  @media (min-width: 1500px){ #qq-panel .brand .url{display:inline} }
+  #qq-panel header{position:relative}
+  #qq-panel .pills{display:flex;gap:6px;flex-wrap:wrap;flex:1 1 360px;min-width:0}
+  #qq-panel .pill.pills-mini{display:none;cursor:pointer;font:inherit;font-size:12px}
+  #qq-panel .pills-mini .arr{font-size:9px;opacity:.7;margin-left:2px}
+  #qq-panel .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:var(--r-pill);
+    background:var(--bubble);font-size:12px;color:var(--muted);border:1px solid var(--line-2);white-space:nowrap}
+  #qq-panel .pill b{font-weight:600;color:var(--text)}
+  #qq-panel .pill.ok{background:var(--ok-soft);color:var(--ok);border-color:transparent}
+  #qq-panel .pill.warn{background:var(--warn-soft);color:var(--warn);border-color:transparent}
+  #qq-panel .pill.bad{background:var(--bad-soft);color:var(--bad);border-color:transparent}
+  #qq-panel .pill.accent{background:var(--accent-soft);color:var(--accent);border-color:transparent}
+  #qq-panel .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:0 0 auto}
+  #qq-panel .dot.ok{background:var(--ok);box-shadow:0 0 0 3px var(--ok-soft)}
+  #qq-panel .dot.warn{background:var(--warn);box-shadow:0 0 0 3px var(--warn-soft)}
+  #qq-panel .dot.bad{background:var(--bad);box-shadow:0 0 0 3px var(--bad-soft)}
+  #qq-panel .hswitch{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);white-space:nowrap;cursor:pointer}
 
-  #qq-panel h2{font-size:20px;margin:0 0 18px;font-weight:600;letter-spacing:-.02em}
-  #qq-panel h2 .muted{font-weight:400;font-size:13px;letter-spacing:0;color:var(--muted)}
-  #qq-panel h3{font-size:13px;margin:22px 0 10px;color:var(--muted);font-weight:500}
+  /* ── 布局 ── */
+  #qq-panel .shell{display:flex;flex:1 1 auto;min-height:0}
+  #qq-panel main{flex:1;min-width:0;padding:26px 30px 90px;overflow:auto;min-height:0;scroll-behavior:smooth}
+  #qq-panel .page{max-width:1240px;margin:0 auto}
 
-  /* 指标卡：白卡浮在灰底上，左侧彩色条 = 一眼分类 */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-  .card{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--line);
-    border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
-  .card .t{font-weight:500;font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:7px}
-  .card .d{color:var(--muted);font-size:12px;margin-top:5px;line-height:1.55}
-  .card .k{font-size:28px;font-weight:600;margin-top:7px;letter-spacing:-.03em;
-    font-variant-numeric:tabular-nums;line-height:1.1}
-  .card .k .muted{font-size:14px;font-weight:400;letter-spacing:0}
+  /* ── 导航：5 个可折叠分组 + 搜索 + 红点 ── */
+  #qq-panel nav{width:226px;flex:0 0 226px;padding:14px 12px 24px;border-right:1px solid var(--line-2);background:var(--card);overflow:auto}
+  #qq-panel .nav-search{position:relative;margin:0 2px 12px}
+  #qq-panel .nav-search input[type=search]{width:100%;height:36px;padding:0 12px 0 34px;border-radius:var(--r-pill);border:1px solid var(--line);
+    background:var(--bubble);outline:none;transition:border-color var(--dur),background var(--dur)}
+  #qq-panel .nav-search input:focus{border-color:var(--accent);background:var(--card);box-shadow:0 0 0 4px var(--accent-soft)}
+  #qq-panel .nav-search::before{content:"";position:absolute;left:13px;top:50%;width:14px;height:14px;transform:translateY(-50%);background:var(--muted);
+    -webkit-mask:var(--ic-search) center/contain no-repeat;mask:var(--ic-search) center/contain no-repeat;pointer-events:none}
+  #qq-panel{--ic-search:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.6-3.6'/%3E%3C/svg%3E")}
+  #qq-panel .nav-results{position:absolute;left:0;right:0;top:42px;z-index:30;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow-pop);max-height:360px;overflow:auto;padding:6px;display:none}
+  #qq-panel .nav-results.show{display:block;animation:qq-pop var(--dur) var(--ease)}
+  #qq-panel .nav-results a{display:block;padding:7px 10px;border-radius:10px;color:var(--text);font-size:13px;line-height:1.4}
+  #qq-panel .nav-results a:hover,#qq-panel .nav-results a.on{background:var(--bubble-2);text-decoration:none}
+  #qq-panel .nav-results a small{display:block;color:var(--muted);font-size:11.5px}
+  #qq-panel .nav-results .none{padding:10px;color:var(--muted);font-size:12.5px;text-align:center}
+  #qq-panel .nav-group{margin-bottom:6px}
+  #qq-panel .nav-gh{display:flex;align-items:center;gap:6px;width:100%;padding:6px 10px;border:0;background:none;cursor:pointer;
+    color:var(--muted);font-size:11.5px;font-weight:600;letter-spacing:.08em;border-radius:10px}
+  #qq-panel .nav-gh:hover{background:var(--bubble)}
+  #qq-panel .nav-gh .arr{display:inline-block;transition:transform var(--dur) var(--ease);font-size:9px}
+  #qq-panel .nav-group.closed .nav-gh .arr{transform:rotate(-90deg)}
+  #qq-panel .nav-gh .cnt{margin-left:auto;font-weight:500;letter-spacing:0}
+  #qq-panel .nav-items{display:grid;gap:2px;overflow:hidden}
+  #qq-panel .nav-group.closed .nav-items{display:none}
+  #qq-panel nav a.nav-it{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--r-pill);color:var(--text);
+    font-size:13.5px;text-decoration:none;transition:background var(--dur),color var(--dur),transform var(--dur) var(--ease)}
+  #qq-panel nav a.nav-it .ic{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;background:var(--bubble);flex:0 0 auto;
+    color:var(--muted);transition:background var(--dur),color var(--dur)}
+  #qq-panel nav a.nav-it:hover .ic{color:var(--accent)}
+  #qq-panel nav a.nav-it:hover{background:var(--bubble);text-decoration:none;transform:translateX(2px)}
+  #qq-panel nav a.nav-it.on{background:var(--bubble-2);color:var(--accent);font-weight:650}
+  #qq-panel nav a.nav-it.on .ic{background:var(--card);box-shadow:0 0 0 1px var(--bubble-3);color:var(--accent)}
+  #qq-panel .badge{margin-left:auto;min-width:19px;height:19px;padding:0 6px;border-radius:var(--r-pill);background:var(--bad);color:#fff;
+    font-size:11px;font-weight:700;display:inline-grid;place-items:center;line-height:1}
+  #qq-panel .badge.warn{background:var(--warn)}
+  #qq-panel .nav-mobile{display:none}
 
-  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .grow{flex:1}
-  .muted{color:var(--muted)}
-  .small{font-size:12px}
-  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+  /* ── 页面标题 ── */
+  #qq-panel .page-hd{display:flex;align-items:center;gap:14px;margin:0 0 20px;flex-wrap:wrap}
+  #qq-panel .page-hd .bub{width:46px;height:46px;border-radius:16px;display:grid;place-items:center;font-size:23px;
+    background:linear-gradient(145deg,var(--bubble-2),var(--bubble));box-shadow:inset 0 0 0 1px var(--line-2)}
+  #qq-panel .page-hd > div:nth-child(2){flex:1 1 280px;min-width:0}
+  #qq-panel .page-hd h2{font-size:22px;margin:0;font-weight:750;letter-spacing:-.02em;line-height:1.2}
+  #qq-panel .page-hd .sub{color:var(--muted);font-size:13px;margin-top:3px}
+  #qq-panel .page-hd .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  #qq-panel h3{font-size:15px;margin:26px 0 12px;font-weight:700;display:flex;align-items:center;gap:8px}
+  #qq-panel h3 .muted{font-weight:500;font-size:12.5px}
+  #qq-panel h4{font-size:13.5px;margin:16px 0 8px;font-weight:700}
 
-  /* 按钮：36px、6px 圆角、白底描边；主按钮用蓝（视觉锚点） */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 14px;
-    border-radius:var(--radius);border:1px solid var(--line);background:var(--card);
-    color:var(--text);cursor:pointer;font-size:13px;font-weight:500;white-space:nowrap;
-    box-shadow:var(--shadow);
-    transition:background .12s,border-color .12s,color .12s}
-  .btn:hover{background:var(--bg-deep);border-color:color-mix(in srgb,var(--line) 70%,var(--muted))}
-  .btn:active{background:var(--bg-deep);box-shadow:inset 0 1px 2px rgba(31,35,40,.10)}
-  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:var(--shadow)}
-  .btn.primary:hover{background:color-mix(in srgb,var(--accent) 88%,#000);border-color:transparent}
-  .btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,var(--line))}
-  .btn.danger:hover{background:var(--bad);color:#fff;border-color:var(--bad)}
-  .btn:disabled{opacity:.5;cursor:default;box-shadow:none;background:var(--bg-deep)}
-  .btn:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
-    outline:2px solid var(--accent);outline-offset:2px}
+  /* ── 卡片 ── */
+  #qq-panel .card{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-card);padding:18px 20px;box-shadow:var(--shadow)}
+  #qq-panel .card + .card{margin-top:14px}
+  #qq-panel .grid > .card + .card{margin-top:0}
+  #qq-panel .card.hover{transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease);cursor:pointer}
+  #qq-panel .card.hover:hover{transform:translateY(-2px);box-shadow:var(--shadow-up)}
+  #qq-panel .card.flat{box-shadow:none;background:var(--bubble);border-color:transparent}
+  #qq-panel .card-hd{display:flex;align-items:center;gap:10px;margin:-2px 0 12px;font-weight:700;font-size:14.5px;flex-wrap:wrap}
+  #qq-panel .card-hd .muted{font-weight:500;font-size:12.5px}
+  #qq-panel .card-hd .acts{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  #qq-panel .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+  #qq-panel .grid.tight{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+  #qq-panel .grid.two{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+  #qq-panel .section{margin-top:22px}
 
-  .sw{position:relative;display:inline-block;width:38px;height:21px;flex:0 0 auto;vertical-align:middle}
-  .sw input{opacity:0;width:0;height:0;position:absolute}
-  .sw i{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:.16s;cursor:pointer}
-  .sw i:before{content:"";position:absolute;width:17px;height:17px;left:2px;top:2px;background:#fff;
-    border-radius:50%;transition:.16s;box-shadow:0 1px 2px rgba(31,35,40,.25)}
-  .sw input:checked+i{background:var(--ok)}
-  .sw input:checked+i:before{transform:translateX(17px)}
-  .sw input:disabled+i{opacity:.4;cursor:not-allowed}
+  /* 数字卡 */
+  #qq-panel .stat{display:flex;gap:14px;align-items:flex-start}
+  #qq-panel .stat .bub{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:20px;background:var(--bubble-2);flex:0 0 auto}
+  #qq-panel .stat .lab{color:var(--muted);font-size:12.5px;font-weight:600}
+  #qq-panel .stat .val{font-size:25px;font-weight:750;letter-spacing:-.03em;line-height:1.2;font-variant-numeric:tabular-nums}
+  #qq-panel .stat .val small{font-size:13px;font-weight:500;color:var(--muted);letter-spacing:0}
+  #qq-panel .stat .dsc{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.5}
+  /* 紧凑数字卡（记忆增强顶部那一排） */
+  #qq-panel .grid.mini{grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px}
+  #qq-panel .grid.mini .card{padding:12px 14px;border-radius:16px}
+  #qq-panel .grid.mini .stat{gap:10px;align-items:center}
+  #qq-panel .grid.mini .stat .bub{width:34px;height:34px;border-radius:12px;font-size:17px}
+  #qq-panel .grid.mini .stat .val{font-size:19px}
+  #qq-panel .grid.mini .stat .lab{font-size:12px}
+  #qq-panel .grid.mini .stat .dsc{font-size:11.5px;margin-top:1px}
+  #qq-panel .stat.ok .bub{background:var(--ok-soft)} #qq-panel .stat.warn .bub{background:var(--warn-soft)} #qq-panel .stat.bad .bub{background:var(--bad-soft)}
 
-  .fcard{position:relative}
-  .fcard .top{display:flex;align-items:flex-start;gap:10px}
-  .fcard .ico{font-size:18px;line-height:1.1}
-  .fcard .risk{font-size:11px;padding:1px 7px;border-radius:999px;background:var(--warn-soft);
-    border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);color:var(--warn)}
-  .fcard .risk.critical{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 30%,transparent);color:var(--bad)}
-  .fcard.off{opacity:.6}
-
-  .field{display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:10px 20px;padding:11px 0;
-    border-bottom:1px solid var(--line-2);align-items:center}
-  .field:last-child{border-bottom:0}
-  .field .lab{font-size:13.5px;font-weight:500}
-  .field .help{grid-column:2;color:var(--muted);font-size:12px;margin-top:-4px;line-height:1.55}
-  .field .ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-
-  #qq-panel input[type=text],#qq-panel input[type=number],#qq-panel input[type=password],#qq-panel select,#qq-panel textarea{
-    height:34px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    padding:0 11px;outline:none;min-width:0;font-size:13.5px;
-    box-shadow:inset 0 1px 2px rgba(31,35,40,.04);
-    transition:border-color .12s,box-shadow .12s}
-  #qq-panel input[type=text]:focus,#qq-panel input[type=number]:focus,#qq-panel input[type=password]:focus,#qq-panel select:focus,#qq-panel textarea:focus{
-    border-color:var(--accent);box-shadow:inset 0 1px 2px rgba(31,35,40,.03),0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
-  #qq-panel input[type=text]::placeholder,#qq-panel textarea::placeholder{color:var(--muted)}
-  #qq-panel input[type=range]{accent-color:var(--accent);width:150px}
-  #qq-panel textarea{height:auto;min-height:240px;padding:10px 11px;resize:vertical;line-height:1.6;width:100%}
-  .field .ctl textarea{flex:1 1 100%;align-self:stretch}
-  /* 人设很长，给足空间（用户反馈：原来太小看不清在写什么） */
-  #qq-panel textarea[data-k="persona"]{min-height:380px}
-  .num{width:96px}
-  .unit{color:var(--muted);font-size:12px}
-
-  /* 分组：白卡 + 灰色表头带 */
-  .section{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    padding:0 18px 14px;margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden}
-  .section>.hd{display:flex;align-items:center;gap:10px;padding:11px 18px;margin:0 -18px 10px;
-    font-weight:600;font-size:13.5px;background:var(--bg-deep);border-bottom:1px solid var(--line)}
-  .section>.hd .muted{font-weight:400;font-size:12px;color:var(--muted)}
-
-  details.adv{margin-top:10px;border-top:1px solid var(--line-2);padding-top:8px}
-  details.adv summary{cursor:pointer;color:var(--muted);font-size:13px;padding:8px 0}
-
-  .table{width:100%;border-collapse:collapse;font-size:13.5px}
-  .table th,.table td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line-2);vertical-align:middle}
-  .table th{background:var(--bg-deep);color:var(--muted);font-weight:500;font-size:12px;
-    border-bottom:1px solid var(--line)}
-  .table tr:last-child td{border-bottom:0}
-  .table tbody tr:hover{background:var(--bg-deep)}
-
-  .feed{max-height:340px;overflow:auto;font-size:13.5px}
-  .feed .line{display:flex;gap:10px;padding:6px 8px;border-bottom:1px solid var(--line-2);border-radius:4px}
-  .feed .line:hover{background:var(--bg-deep)}
-  .feed .time{color:var(--muted);font-size:11.5px;white-space:nowrap;padding-top:2px;font-variant-numeric:tabular-nums}
-  .feed .who{font-weight:600;white-space:nowrap}
-  .feed .txt{word-break:break-word}
-
-  .logbox{background:#0D1117;color:#C9D1D9;border:1px solid var(--line);border-radius:var(--radius);
-    padding:14px;height:420px;overflow:auto;font:12px/1.7 ui-monospace,Menlo,Consolas,monospace;
-    white-space:pre-wrap;word-break:break-all}
-
-  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--text);color:var(--card);
-    padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;opacity:0;pointer-events:none;
-    transition:.18s;z-index:99;max-width:80vw;box-shadow:var(--shadow-md)}
-  .toast.show{opacity:1}
-  .toast.err{background:var(--bad);color:#fff}
-  .toast.ok{background:var(--ok);color:#fff}
-
-  .chips{display:flex;gap:6px;flex-wrap:wrap}
-  .chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;
-    background:var(--chip);font-size:12px;border:1px solid var(--line)}
-  .empty{color:var(--muted);font-size:13.5px;padding:20px 0;text-align:center;
-    border:1px dashed var(--line);border-radius:var(--radius);background:var(--bg-deep)}
-  .kbd{font:11px ui-monospace,Menlo,Consolas,monospace;background:var(--chip);border:1px solid var(--line);
-    border-radius:4px;padding:2px 5px;color:var(--muted)}
-  .skel{color:var(--muted);padding:24px 0;text-align:center}
-
-
-  @media (max-width: 800px){
-    #qq-panel .shell{flex-direction:column;overflow:hidden}
-    #qq-panel nav{width:auto;flex:0 0 auto;position:static;border-right:0;border-bottom:1px solid var(--line);
-      display:flex;overflow-x:auto;overflow-y:hidden;gap:2px;padding:8px 10px;z-index:15}
-    #qq-panel nav a{margin:0;white-space:nowrap;padding:7px 11px}
-    #qq-panel main{flex:1 1 auto;min-height:0;overflow:auto;padding:18px 14px 64px}
-    #qq-panel .field{grid-template-columns:1fr}
-    #qq-panel .field .help{grid-column:1}
-    #qq-panel .pills{order:3;flex-basis:100%}
-    #qq-panel .card .k{font-size:24px}
-    #qq-panel h2{font-size:18px}
-    #qq-panel .section>.hd{margin:0 -14px 8px;padding:10px 14px}
-  }
-  @media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
-
-
-  /* == 可读性覆盖层 == */
-  #qq-panel main{background:var(--bg)}
-  #qq-panel .card{box-shadow:var(--shadow);transition:box-shadow .15s ease}
-  #qq-panel .card:hover{box-shadow:var(--shadow-md)}
-  #qq-panel .card .t{font-size:13px;color:var(--muted);letter-spacing:.02em}
-  #qq-panel .card .k{font-size:22px;line-height:1.35;margin:2px 0 2px}
-  #qq-panel .card .d{font-size:12.5px;color:var(--muted)}
-  #qq-panel .section>.hd{font-weight:600;font-size:14.5px;color:var(--text)}
-  #qq-panel .section>.hd .muted{font-weight:400}
-  #qq-panel .field{padding:13px 0}
-  #qq-panel .field .lab{font-size:14px;font-weight:600;color:var(--text)}
-  #qq-panel .field .help{font-size:12.5px;color:var(--muted);line-height:1.6}
-  #qq-panel .field .unit{color:var(--muted)}
-  #qq-panel .table{font-size:14px}
-  #qq-panel .table th{font-size:12.5px;letter-spacing:.03em;color:var(--muted)}
-  #qq-panel .table tbody tr:hover{background:var(--accent-soft)}
-  #qq-panel nav a{font-size:14px;min-height:34px}
-  #qq-panel nav a.on{box-shadow:inset 3px 0 0 var(--accent);font-weight:600}
+  /* ── 通用小件 ── */
+  #qq-panel .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  #qq-panel .grow{flex:1;min-width:0}
   #qq-panel .muted{color:var(--muted)}
   #qq-panel .small{font-size:12.5px}
-  #qq-panel .btn{font-weight:500;min-height:32px;transition:background .15s,border-color .15s}
-  #qq-panel .btn:hover{background:var(--bg-deep);border-color:var(--line)}
-  #qq-panel .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  #qq-panel .btn.primary:hover{filter:brightness(1.07)}
-  #qq-panel :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-  #qq-panel .logbox{background:#0B0F14;color:#D6DEE8;font-size:12.5px;line-height:1.65}
-  #qq-panel .pill{background:var(--card);border-color:var(--line);color:var(--muted)}
-  #qq-panel .pill b{color:var(--text);font-weight:600}
-  #qq-panel .hswitch{font-size:13.5px;color:var(--text)}
-  #qq-panel .fcard .top .t{font-size:14.5px;font-weight:600;color:var(--text)}
-  #qq-panel .fcard .top .d{font-size:12.5px;color:var(--muted)}
-  #qq-panel .banner.show{padding:10px 14px;font-weight:500}
+  #qq-panel .tiny{font-size:11.5px}
+  #qq-panel .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+  #qq-panel .ok-t{color:var(--ok)} #qq-panel .warn-t{color:var(--warn)} #qq-panel .bad-t{color:var(--bad)}
+  #qq-panel .sep{height:1px;background:var(--line-2);margin:14px 0;border:0}
+  #qq-panel .chips{display:flex;gap:6px;flex-wrap:wrap}
+  #qq-panel .chip{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:var(--r-pill);
+    background:var(--chip);font-size:12px;color:var(--text);border:1px solid transparent;white-space:nowrap;line-height:1.6}
+  #qq-panel .chip.ok{background:var(--ok-soft);color:var(--ok)}
+  #qq-panel .chip.warn{background:var(--warn-soft);color:var(--warn)}
+  #qq-panel .chip.bad{background:var(--bad-soft);color:var(--bad)}
+  #qq-panel .chip.accent{background:var(--accent-soft);color:var(--accent)}
+  #qq-panel .chip.line{background:transparent;border-color:var(--line)}
+  #qq-panel .kbd{font:11px ui-monospace,Menlo,Consolas,monospace;background:var(--chip);border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--muted)}
+  #qq-panel .dots{letter-spacing:1px;color:var(--accent);font-size:11px}
+  #qq-panel .dots i{font-style:normal;color:var(--line)}
+  #qq-panel .bar{display:block;height:6px;border-radius:99px;background:var(--line-2);overflow:hidden;min-width:48px}
+  #qq-panel .bar > i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 55%,var(--card)),var(--accent));transition:width 200ms var(--ease)}
+  #qq-panel .bar.ok > i{background:linear-gradient(90deg,color-mix(in srgb,var(--ok) 55%,var(--card)),var(--ok))}
+  #qq-panel .bar.warn > i{background:linear-gradient(90deg,color-mix(in srgb,var(--warn) 55%,var(--card)),var(--warn))}
+  #qq-panel .bar.bad > i{background:linear-gradient(90deg,color-mix(in srgb,var(--bad) 55%,var(--card)),var(--bad))}
 
-  /* 头部在窄屏可以长高，不裁内容 */
-  #qq-panel header{height:auto;min-height:52px;padding:8px 20px;gap:12px}
-  #qq-panel .pills{flex-wrap:wrap;min-width:0}
-  #qq-panel .brand{font-size:15px}
-  #qq-panel .brand small{font-size:12px}
+  /* ── 按钮：胶囊形 ── */
+  #qq-panel .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 15px;border-radius:var(--r-pill);
+    border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;font-size:13px;font-weight:600;white-space:nowrap;
+    transition:background var(--dur),border-color var(--dur),transform var(--dur) var(--ease),box-shadow var(--dur);text-decoration:none}
+  #qq-panel .btn:hover{background:var(--bubble);border-color:var(--bubble-3);text-decoration:none}
+  #qq-panel .btn:active{transform:scale(.97)}
+  #qq-panel .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 4px 12px color-mix(in srgb,var(--accent) 28%,transparent)}
+  #qq-panel .btn.primary:hover{filter:brightness(1.07)}
+  #qq-panel .btn.soft{background:var(--bubble-2);border-color:transparent;color:var(--accent)}
+  #qq-panel .btn.soft:hover{background:var(--bubble-3)}
+  #qq-panel .btn.ghost{background:transparent;border-color:transparent;color:var(--muted)}
+  #qq-panel .btn.ghost:hover{background:var(--bubble);color:var(--text)}
+  #qq-panel .btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 35%,var(--line))}
+  #qq-panel .btn.danger:hover{background:var(--bad);color:#fff;border-color:var(--bad)}
+  #qq-panel .btn.danger.solid{background:var(--bad);color:#fff;border-color:var(--bad)}
+  #qq-panel .btn.sm{height:28px;padding:0 11px;font-size:12px}
+  #qq-panel .btn.xs{height:24px;padding:0 9px;font-size:11.5px}
+  #qq-panel .btn.icon{width:34px;padding:0}
+  #qq-panel .btn.sm.icon{width:28px}
+  #qq-panel .btn:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none}
+  #qq-panel .link{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-size:12px;font-weight:600}
+  #qq-panel .link:hover{text-decoration:underline}
+  #qq-panel .link.muted{color:var(--muted)}
+
+  /* ── 输入框 ── */
+  #qq-panel input[type=text],#qq-panel input[type=number],#qq-panel input[type=password],#qq-panel input[type=date],#qq-panel input[type=search],#qq-panel select,#qq-panel textarea{
+    height:36px;padding:0 12px;border-radius:var(--r-ctl);border:1px solid var(--line);background:var(--card);outline:none;min-width:0;
+    transition:border-color var(--dur),box-shadow var(--dur)}
+  #qq-panel input:focus,#qq-panel select:focus,#qq-panel textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+  #qq-panel input::placeholder,#qq-panel textarea::placeholder{color:color-mix(in srgb,var(--muted) 80%,transparent)}
+  #qq-panel select{padding-right:8px;cursor:pointer}
+  #qq-panel input.num{width:104px;font-variant-numeric:tabular-nums}
+  #qq-panel input[type=range]{accent-color:var(--accent);width:160px;cursor:pointer}
+  #qq-panel textarea{height:auto;min-height:120px;padding:10px 12px;resize:vertical;line-height:1.6;width:100%}
+  #qq-panel input:disabled,#qq-panel select:disabled,#qq-panel textarea:disabled{opacity:.55;cursor:not-allowed}
+
+  /* 开关 */
+  #qq-panel .sw{position:relative;display:inline-block;width:40px;height:23px;flex:0 0 auto;vertical-align:middle}
+  #qq-panel .sw input{opacity:0;width:0;height:0;position:absolute}
+  #qq-panel .sw i{position:absolute;inset:0;background:var(--line);border-radius:999px;transition:background var(--dur);cursor:pointer}
+  #qq-panel .sw i:before{content:"";position:absolute;width:19px;height:19px;left:2px;top:2px;background:#fff;border-radius:999px;
+    transition:transform var(--dur) var(--spring),width 120ms var(--ease);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  #qq-panel .sw input:checked+i{background:var(--ok)}
+  #qq-panel .sw input:checked+i:before{transform:translateX(17px)}
+  #qq-panel .sw:active i:before{width:23px}
+  #qq-panel .sw:active input:checked+i:before{transform:translateX(13px)}
+  #qq-panel .sw input:disabled+i{opacity:.45;cursor:not-allowed}
+  #qq-panel .sw input:focus-visible+i{box-shadow:0 0 0 4px var(--accent-soft)}
+
+  /* ── 标签条（一行，放不下横向滚动） ── */
+  #qq-panel .tabs{display:flex;gap:6px;overflow-x:auto;padding:4px;margin:0 0 16px;background:var(--bubble);border-radius:var(--r-pill);
+    max-width:100%}
+  #qq-panel .tabs::-webkit-scrollbar{height:6px}
+  #qq-panel .tabs .tg{display:flex;align-items:center;color:var(--muted);font-size:11.5px;font-weight:700;padding:0 6px 0 10px;white-space:nowrap;letter-spacing:.06em}
+  #qq-panel .tabs .tg + .tg,#qq-panel .tabs .tab + .tg{border-left:1px solid var(--line);margin-left:4px}
+  #qq-panel .tab{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:var(--r-pill);border:0;background:transparent;
+    color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background var(--dur),color var(--dur)}
+  #qq-panel .tab:hover{color:var(--text);background:var(--bubble-2)}
+  #qq-panel .tab.on{background:var(--card);color:var(--accent);box-shadow:0 1px 3px color-mix(in srgb,var(--shade) 14%,transparent)}
+  #qq-panel .tab .badge{margin-left:2px}
+
+  /* ── 参数：两栏（左名字说明，右控件） ── */
+  #qq-panel .pgroup + .pgroup{margin-top:16px}
+  #qq-panel .pgroup .card-hd .bub{width:30px;height:30px;border-radius:11px;display:grid;place-items:center;background:var(--bubble-2);font-size:15px}
+  #qq-panel .field{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);gap:6px 28px;padding:14px 4px;border-top:1px solid var(--line-2);
+    border-radius:12px;transition:background .6s var(--ease)}
+  #qq-panel .field:first-of-type{border-top:0}
+  #qq-panel .field .lab{font-size:14px;font-weight:650;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  #qq-panel .field .help{color:var(--muted);font-size:12.5px;line-height:1.6;margin-top:3px}
+  #qq-panel .field .ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap;align-content:flex-start}
+  #qq-panel .field .ctl .unit{color:var(--muted);font-size:12.5px}
+  #qq-panel .field .ctl .hv{color:var(--muted);font-size:12px}
+  #qq-panel .field .def{flex-basis:100%;font-size:12px;color:var(--muted)}
+  #qq-panel .field.changed{background:color-mix(in srgb,var(--accent) 4%,transparent)}
+  #qq-panel .field.flash{background:var(--bubble-3)}
+  #qq-panel .field .ctl textarea{flex:1 1 100%}
+  #qq-panel .field.wide{grid-template-columns:1fr}
+  #qq-panel .field.wide .ctl{margin-top:6px}
+  #qq-panel textarea[data-k="persona"]{min-height:300px}
+  #qq-panel .tag-changed{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:var(--r-pill);padding:0 7px;line-height:18px}
+  #qq-panel .tag-room{font-size:11px;font-weight:600;color:var(--muted);background:var(--chip);border-radius:var(--r-pill);padding:0 7px;line-height:18px;text-decoration:none}
+  #qq-panel .tag-room:hover{color:var(--accent);text-decoration:none}
+
+  /* 折叠区（参数、高级、预览……） */
+  #qq-panel details.fold{background:var(--card);border:1px solid var(--line-2);border-radius:var(--r-card);box-shadow:var(--shadow);margin-top:22px}
+  #qq-panel details.fold > summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:14px 20px;font-weight:700;font-size:14.5px;border-radius:var(--r-card)}
+  #qq-panel details.fold > summary::-webkit-details-marker{display:none}
+  #qq-panel details.fold > summary::after{content:"›";margin-left:auto;font-size:20px;color:var(--muted);transition:transform var(--dur) var(--ease)}
+  #qq-panel details.fold[open] > summary::after{transform:rotate(90deg)}
+  #qq-panel details.fold > summary:hover{background:var(--bubble)}
+  #qq-panel details.fold > summary .muted{font-weight:500;font-size:12.5px}
+  #qq-panel details.fold > .fold-body{padding:4px 20px 18px}
+  #qq-panel details.fold[open] > .fold-body{animation:qq-fade var(--dur) var(--ease)}
+
+  /* 吸底保存栏 */
+  #qq-panel .savebar{position:sticky;bottom:0;z-index:8;margin:18px 0 0;padding:10px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    background:color-mix(in srgb,var(--card) 90%,transparent);backdrop-filter:blur(8px);border:1px solid var(--line-2);border-radius:var(--r-pill);
+    box-shadow:var(--shadow-up)}
+  #qq-panel .savebar .hint{color:var(--muted);font-size:12.5px}
+  #qq-panel .savebar.dirty{border-color:var(--bubble-3)}
+  #qq-panel .savebar.dirty .hint{color:var(--accent);font-weight:600}
+
+  /* ── 功能卡（功能开关页 / 记忆深度） ── */
+  #qq-panel .fcard{display:flex;flex-direction:column;gap:10px}
+  #qq-panel .fcard .top{display:flex;align-items:flex-start;gap:12px}
+  #qq-panel .fcard .ico{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;font-size:20px;background:var(--bubble-2);flex:0 0 auto}
+  #qq-panel .fcard .t{font-weight:700;font-size:14.5px}
+  #qq-panel .fcard .d{color:var(--muted);font-size:12.5px;line-height:1.55;margin-top:2px}
+  #qq-panel .fcard.off{background:var(--bg-deep);box-shadow:none}
+  #qq-panel .fcard.off .ico{filter:grayscale(.8);opacity:.7}
+  #qq-panel .fcard .foot{display:flex;align-items:center;gap:8px;margin-top:auto;font-size:12.5px;color:var(--muted)}
+  #qq-panel .fcard .foot .bar{flex:1}
+
+  /* ── 列表行（记忆明细、理解……） ── */
+  #qq-panel .list{display:grid;gap:8px}
+  #qq-panel .lrow{display:flex;gap:12px;align-items:flex-start;padding:12px 16px;border-radius:16px;background:var(--card);border:1px solid var(--line-2);
+    cursor:pointer;transition:border-color var(--dur),box-shadow var(--dur),transform var(--dur) var(--ease)}
+  #qq-panel .lrow:hover{border-color:var(--bubble-3);box-shadow:var(--shadow);transform:translateY(-1px)}
+  #qq-panel .lrow.sel{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  #qq-panel .lrow .lead{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;font-size:17px;background:var(--bubble);flex:0 0 auto}
+  #qq-panel .lrow .body{flex:1;min-width:0}
+  #qq-panel .lrow .main{font-size:14px;line-height:1.55;word-break:break-word}
+  #qq-panel .lrow .meta{display:flex;gap:6px 10px;flex-wrap:wrap;margin-top:5px;font-size:12px;color:var(--muted);align-items:center}
+  #qq-panel .lrow .side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:0 0 auto;font-size:12px;color:var(--muted)}
+  #qq-panel .lrow.warn{border-color:color-mix(in srgb,var(--warn) 45%,var(--line-2));background:color-mix(in srgb,var(--warn) 5%,var(--card))}
+  #qq-panel .lrow.dim{opacity:.62}
+  #qq-panel .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  #qq-panel .toolbar .search{flex:1 1 220px;min-width:180px;border-radius:var(--r-pill)!important}
+  #qq-panel input[type=search]:not(#nav-q){padding-left:34px;background:var(--card) no-repeat 12px center/14px
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A9BB0' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.6-3.6'/%3E%3C/svg%3E")}
+
+  /* ── 时间轴（我们之间的故事 / 变化线 / 想起往事） ── */
+  #qq-panel .tl{position:relative;padding-left:44px;margin:4px 0}
+  #qq-panel .tl::before{content:"";position:absolute;left:17px;top:8px;bottom:8px;width:2px;border-radius:2px;background:linear-gradient(var(--bubble-3),var(--line-2))}
+  #qq-panel .tl-it{position:relative;padding:8px 12px 10px;margin-bottom:8px;border-radius:14px;transition:background var(--dur)}
+  #qq-panel .tl-it:hover{background:var(--bubble)}
+  #qq-panel .tl-it.click{cursor:pointer}
+  #qq-panel .tl-it .ico{position:absolute;left:-41px;top:6px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-size:15px;
+    background:var(--card);box-shadow:0 0 0 2px var(--bubble-3),var(--shadow)}
+  #qq-panel .tl-it .when{font-size:11.5px;color:var(--muted);font-weight:600}
+  #qq-panel .tl-it .what{font-size:13.5px;line-height:1.55;margin-top:1px}
+  #qq-panel .tl-it.end .ico{box-shadow:0 0 0 2px var(--warn-soft),var(--shadow)}
+  #qq-panel .tl-it.now .ico{box-shadow:0 0 0 2px var(--accent),var(--shadow)}
+  #qq-panel .tl-it .ico.tint{background:color-mix(in srgb,var(--c) 16%,var(--card));box-shadow:0 0 0 2px color-mix(in srgb,var(--c) 45%,transparent),var(--shadow)}
+  #qq-panel .tl-it.now .ico.tint{box-shadow:0 0 0 2px var(--c),var(--shadow)}
+  #qq-panel .tl-it .tt{color:color-mix(in srgb,var(--c) 78%,var(--text));font-weight:700}
+
+  /* ── 抽屉 / 弹窗 ── */
+  #qq-panel .scrim{position:absolute;inset:0;z-index:60;background:var(--scrim);backdrop-filter:blur(2px);
+    animation:qq-fade var(--dur) var(--ease)}
+  #qq-panel .drawer{position:absolute;top:0;right:0;bottom:0;z-index:61;width:min(500px,94%);background:var(--card);border-left:1px solid var(--line-2);
+    box-shadow:var(--shadow-pop);display:flex;flex-direction:column;animation:qq-slide 200ms var(--ease);border-radius:22px 0 0 22px}
+  #qq-panel .drawer .dh{display:flex;align-items:center;gap:12px;padding:18px 20px 12px;border-bottom:1px solid var(--line-2)}
+  #qq-panel .drawer .dh .bub{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:var(--bubble-2);font-size:18px;flex:0 0 auto}
+  #qq-panel .drawer .dh b{font-size:16px;display:block;line-height:1.3}
+  #qq-panel .drawer .dh .muted{font-size:12px}
+  #qq-panel .drawer .db{flex:1;overflow:auto;padding:16px 20px 20px}
+  #qq-panel .drawer .df{display:flex;gap:8px;align-items:center;padding:12px 20px;border-top:1px solid var(--line-2);flex-wrap:wrap}
+  #qq-panel .drawer .df .grow{flex:1}
+  #qq-panel .fld{margin-bottom:14px}
+  #qq-panel .fld > label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:5px}
+  #qq-panel .fld > input,#qq-panel .fld > select,#qq-panel .fld > textarea{width:100%}
+  #qq-panel .fld .row > select{flex:1}
+  #qq-panel .fld-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+  #qq-panel .dialog{position:absolute;left:50%;top:22%;z-index:62;transform:translateX(-50%);width:min(440px,92%);background:var(--card);border-radius:22px;
+    box-shadow:var(--shadow-pop);padding:22px;animation:qq-pop var(--dur) var(--ease);border:1px solid var(--line-2)}
+  #qq-panel .dialog .dt{font-weight:750;font-size:16.5px;display:flex;align-items:center;gap:10px}
+  #qq-panel .dialog .dt .bub{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:var(--bubble-2);font-size:18px}
+  #qq-panel .dialog.danger .dt .bub{background:var(--bad-soft)}
+  #qq-panel .dialog .dx{color:var(--muted);font-size:13.5px;margin:10px 0 0;white-space:pre-wrap;line-height:1.6}
+  #qq-panel .dialog input{width:100%;margin-top:12px}
+  #qq-panel .dialog .da{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+
+  /* ── 空状态 / 加载中 ── */
+  #qq-panel .empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:30px 16px;text-align:center;color:var(--muted);
+    border-radius:var(--r-card);background:var(--bubble);border:1px dashed var(--bubble-3)}
+  #qq-panel .empty .wh{margin-bottom:2px}
+  #qq-panel .empty .et{font-weight:700;color:var(--text);font-size:14px}
+  #qq-panel .empty .eh{font-size:12.5px;max-width:460px;line-height:1.6}
+  #qq-panel .empty .btn{margin-top:6px}
+  #qq-panel .sk{display:block;height:12px;border-radius:99px;margin:6px 0;background:linear-gradient(90deg,var(--sk-1) 25%,var(--sk-2) 45%,var(--sk-1) 65%);
+    background-size:400% 100%;animation:qq-shimmer 1.4s ease infinite}
+  #qq-panel .sk.sm{height:9px}
+  #qq-panel .sk-wrap{padding:4px 0}
+  #qq-panel .sk-list{display:grid;gap:10px}
+  #qq-panel .sk-row{display:flex;gap:12px;align-items:center;padding:12px 16px;border-radius:16px;border:1px solid var(--line-2);background:var(--card)}
+  #qq-panel .sk-row .sk{margin:5px 0}
+  #qq-panel .sk.sk-av{width:34px!important;height:34px;border-radius:12px;flex:0 0 auto;margin:0}
+  #qq-panel .sk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:12px}
+  #qq-panel .sk.sk-tile{height:112px;border-radius:16px;margin:0}
+  #qq-panel .sk.sk-chart{height:190px;border-radius:16px;margin:0}
+  #qq-panel .sk.sk-stat{height:62px;border-radius:16px;margin:0}
+  #qq-panel .boot{display:flex;flex-direction:column;align-items:center;gap:10px;padding:90px 0;color:var(--muted);font-size:13.5px}
+  #qq-panel .skel{color:var(--muted);padding:40px 0;text-align:center}
+
+  /* ── 横幅 / 提示条 ── */
+  #qq-panel .banner{display:none;align-items:center;gap:10px;padding:11px 16px;border-radius:16px;margin-bottom:18px;font-size:13.5px;font-weight:600}
+  #qq-panel .banner.show{display:flex}
+  #qq-panel .banner.bad{background:var(--bad-soft);color:var(--bad)}
+  #qq-panel .banner.warn{background:var(--warn-soft);color:var(--warn)}
+  #qq-panel .note{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:14px;background:var(--bubble);color:var(--muted);font-size:12.5px;line-height:1.65;margin-bottom:14px}
+  #qq-panel .note .ni{font-size:15px;line-height:1.4;color:var(--accent)}
+  #qq-panel .note .ni .qi{width:17px;height:17px;vertical-align:-3px}
+  #qq-panel .note.err{background:var(--bad-soft);color:var(--bad);align-items:center}
+  #qq-panel .note.err .ni{line-height:0}
+
+  /* ── 表格（少量地方还用） ── */
+  #qq-panel .table-wrap{overflow:auto;border-radius:14px;border:1px solid var(--line-2)}
+  #qq-panel .table{width:100%;border-collapse:collapse;font-size:13.5px}
+  #qq-panel .table th,#qq-panel .table td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+  #qq-panel .table th{background:var(--bubble);color:var(--muted);font-weight:700;font-size:12px;letter-spacing:.03em;white-space:nowrap}
+  #qq-panel .table tr:last-child td{border-bottom:0}
+  #qq-panel .table tbody tr{transition:background var(--dur)}
+  #qq-panel .table tbody tr:hover{background:var(--bubble)}
+
+  /* ── 总览 ── */
+  #qq-panel .todo{display:grid;gap:8px}
+  #qq-panel .todo a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:14px;background:var(--bubble);color:var(--text);text-decoration:none;
+    transition:background var(--dur),transform var(--dur) var(--ease)}
+  #qq-panel .todo a:hover{background:var(--bubble-2);transform:translateX(3px);text-decoration:none}
+  #qq-panel .todo a .ti{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--card);font-size:15px}
+  #qq-panel .todo a.bad .ti{background:var(--bad-soft)} #qq-panel .todo a.warn .ti{background:var(--warn-soft)}
+  #qq-panel .todo a .go{margin-left:auto;color:var(--muted);font-size:18px}
+  #qq-panel .allgood{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:16px;background:var(--ok-soft);color:var(--ok);font-weight:650}
+  #qq-panel .roomcard .rn{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px}
+  #qq-panel .roomcard .rd{color:var(--muted);font-size:12.5px;margin-top:2px}
+  #qq-panel .roomcard .rl{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;margin-top:12px;font-size:12.5px}
+  #qq-panel .roomcard .dec{margin-top:10px;font-size:12px;color:var(--muted);background:var(--bubble);border-radius:10px;padding:6px 10px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* 聊天气泡（最近消息、手动操作） */
+  #qq-panel .chat{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto;padding:4px 2px}
+  #qq-panel .msg{display:flex;gap:10px;align-items:flex-end;max-width:88%}
+  #qq-panel .msg .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:var(--bubble-2);color:var(--accent);flex:0 0 auto}
+  #qq-panel .msg .bb{padding:8px 12px;border-radius:16px 16px 16px 6px;background:var(--bubble);font-size:13.5px;line-height:1.55;word-break:break-word}
+  #qq-panel .msg .bb .who{font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:1px}
+  #qq-panel .msg .bb .tm{font-size:11px;color:var(--muted);margin-left:6px;font-weight:500}
+  #qq-panel .msg.me{align-self:flex-end;flex-direction:row-reverse}
+  #qq-panel .msg.me .av{background:var(--bubble-2)}
+  #qq-panel .msg.me .bb{background:var(--accent);color:#fff;border-radius:16px 16px 6px 16px}
+  #qq-panel .msg.me .bb .who,#qq-panel .msg.me .bb .tm{color:color-mix(in srgb,#fff 78%,transparent)}
+
+  /* 表情包图库 */
+  #qq-panel .gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:12px}
+  #qq-panel .gi{position:relative;border-radius:16px;background:var(--bubble);padding:10px 8px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;
+    border:1px solid transparent;transition:border-color var(--dur),transform var(--dur) var(--ease),box-shadow var(--dur)}
+  #qq-panel .gi:hover{border-color:var(--bubble-3);transform:translateY(-2px);box-shadow:var(--shadow)}
+  #qq-panel .gi img,#qq-panel .gi .ph{width:72px;height:72px;object-fit:contain;border-radius:12px;display:grid;place-items:center;font-size:30px}
+  #qq-panel .gi .gl{font-size:11px;color:var(--muted);text-align:center;line-height:1.3}
+  #qq-panel .gi .ga{position:absolute;inset:auto 6px 6px 6px;display:flex;gap:4px;justify-content:center;opacity:0;transform:translateY(4px);
+    transition:opacity var(--dur),transform var(--dur) var(--ease)}
+  #qq-panel .gi:hover .ga,#qq-panel .gi:focus-within .ga{opacity:1;transform:none}
+  #qq-panel .gi.bad{opacity:.45}
+  #qq-panel .gi .fav{position:absolute;top:6px;right:8px;font-size:12px;color:#E0A21F}
+  /* 悬停时的三个圆按钮：发送 / 收藏 / 删除 */
+  #qq-panel .gi .ga{gap:6px}
+  #qq-panel .gb{width:28px;height:28px;padding:0;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--card);
+    cursor:pointer;box-shadow:var(--shadow);transition:background var(--dur),color var(--dur),border-color var(--dur),transform var(--dur) var(--spring)}
+  #qq-panel .gb .qi{width:15px;height:15px;vertical-align:0}
+  #qq-panel .gb:hover{transform:translateY(-1px) scale(1.06)}
+  #qq-panel .gb.g-send{color:var(--accent)} #qq-panel .gb.g-send:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+  #qq-panel .gb.g-fav{color:#E0A21F} #qq-panel .gb.g-fav:hover{background:#F2AE2E;border-color:#F2AE2E;color:#fff}
+  #qq-panel .gb.g-fav.on .qi{fill:currentColor}
+  #qq-panel .gb.g-del{color:var(--bad)} #qq-panel .gb.g-del:hover{background:var(--bad);border-color:var(--bad);color:#fff}
+  #qq-panel .gb:disabled{opacity:.45;cursor:default;transform:none;background:var(--card);color:var(--muted)}
+  #qq-panel .gb:disabled:hover{background:var(--card);border-color:var(--line)}
+  #qq-panel .gb.g-fav.on:disabled{opacity:1;color:#E0A21F}
+
+  /* 日志 */
+  #qq-panel .logbox{background:#0E1520;color:#D3DDEA;border-radius:16px;padding:12px 14px;font:12.5px/1.7 ui-monospace,Consolas,monospace;
+    max-height:460px;overflow:auto;white-space:pre-wrap;word-break:break-all}
+  #qq-panel .logbox .le{color:#FF8A8F} #qq-panel .logbox .lr{color:#7EE2A8} #qq-panel .logbox .lm{color:#8EC5FF} #qq-panel .logbox .lc{color:#F5C46B}
+  #qq-panel mark{background:color-mix(in srgb,var(--warn) 35%,transparent);color:inherit;border-radius:4px;padding:0 2px}
+
+  /* 键值（运行指标） */
+  #qq-panel .kv{display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-size:13px}
+  #qq-panel .kv > span:nth-child(odd){color:var(--muted)}
+  #qq-panel .kv > span:nth-child(even){font-variant-numeric:tabular-nums;font-weight:600;text-align:right}
 
   /* Markdown 片段（画像 / 摘要 / 关系） */
-  #qq-panel .md{line-height:1.75}
-  #qq-panel .md h4{font-size:14px;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line-2);color:var(--text)}
-  #qq-panel .md h5{font-size:13px;margin:10px 0 4px;color:var(--text)}
+  #qq-panel .md{line-height:1.75;font-size:13.5px}
+  #qq-panel .md h4{font-size:14px;margin:14px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line-2)}
+  #qq-panel .md h5{font-size:13px;margin:10px 0 4px}
   #qq-panel .md p{margin:4px 0}
   #qq-panel .md ul{margin:4px 0 4px 18px;padding:0}
   #qq-panel .md li{margin:2px 0}
-  #qq-panel .md code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:var(--chip);
-    border:1px solid var(--line-2);border-radius:4px;padding:1px 4px}
-  #qq-panel .md b{font-weight:600}
-  #qq-panel mark{background:color-mix(in srgb,var(--warn) 30%,transparent);color:inherit;border-radius:3px;padding:0 2px}
+  #qq-panel .md code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:var(--chip);border-radius:6px;padding:1px 5px}
 
-  /* 吸底保存栏：页面再长，「保存」也永远在视野里 */
-  #qq-panel .savebar{position:sticky;bottom:0;z-index:6;margin:18px -4px 0;padding:10px 12px;
-    background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(6px);
-    border-top:1px solid var(--line);border-radius:var(--radius);box-shadow:0 -2px 10px rgba(0,0,0,.05)}
+  /* 记忆深度卡片里的参数：上下排（卡片只有半屏宽） */
+  #qq-panel .deep-fields .field{grid-template-columns:1fr;gap:6px;padding:12px 2px}
+  #qq-panel .deep-card{gap:6px}
+  /* 瀑布流：卡片高矮不一时不留大片空白 */
+  #qq-panel .cols{columns:2 360px;column-gap:14px}
+  #qq-panel .cols > .card{break-inside:avoid;margin:0 0 14px;display:flex;width:100%}
+  #qq-panel .cols > .card + .card{margin-top:0}
 
-  /* 小屏：表格列太多，隐藏"最近决策"列 */
-  @media (max-width: 900px){
-    #qq-panel .col-decision{display:none}
+  /* 整理记录：改之前 → 改之后 */
+  #qq-panel .cons-it{padding:10px 4px;border-top:1px solid var(--line-2)}
+  #qq-panel .cons-it:first-of-type{border-top:0}
+  #qq-panel .diff{margin-top:8px;display:grid;gap:4px;font-size:13px}
+  #qq-panel .diff .old{padding:5px 10px;border-radius:10px;background:var(--bad-soft);color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--bad) 60%,transparent)}
+  #qq-panel .diff .new{padding:5px 10px;border-radius:10px;background:var(--ok-soft);color:var(--text)}
+
+  /* 每群性格 */
+  #qq-panel .rc-wrap{display:flex;gap:16px;align-items:flex-start}
+  #qq-panel .rc-list{flex:0 0 236px;position:sticky;top:0}
+  #qq-panel .rc-row{display:flex;gap:8px;align-items:center;padding:9px 12px;border-radius:14px;cursor:pointer;transition:background var(--dur)}
+  #qq-panel .rc-row:hover{background:var(--bubble)}
+  #qq-panel .rc-row.on{background:var(--bubble-2);color:var(--accent);font-weight:650}
+  #qq-panel .rc-edit{flex:1 1 auto;min-width:0}
+  #qq-panel .rc-hd{position:sticky;top:-26px;z-index:6;margin:-18px -20px 12px;padding:14px 20px;border-radius:var(--r-card) var(--r-card) 0 0;
+    background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-2)}
+  #qq-panel details.rc-sec{border-top:1px solid var(--line-2);padding:4px 0}
+  #qq-panel details.rc-sec:first-of-type{border-top:0}
+  #qq-panel details.rc-sec > summary{cursor:pointer;font-weight:700;font-size:13.5px;padding:10px 4px;list-style:none;display:flex;gap:8px;align-items:center}
+  #qq-panel details.rc-sec > summary::-webkit-details-marker{display:none}
+  #qq-panel details.rc-sec > summary::before{content:"›";font-size:16px;color:var(--muted);transition:transform var(--dur) var(--ease);display:inline-block}
+  #qq-panel details.rc-sec[open] > summary::before{transform:rotate(90deg)}
+  #qq-panel .rc-field[data-on="1"]{background:color-mix(in srgb,var(--accent) 5%,transparent)}
+
+  /* 关系图 */
+  #qq-panel .graph{overflow:auto;max-width:100%;border-radius:16px;background:radial-gradient(circle at 50% 45%,var(--bubble-2),var(--bubble) 70%)}
+  #qq-panel .graph .ge .hit{fill:none;stroke:transparent;stroke-width:14px;pointer-events:stroke}
+  #qq-panel .graph .ge .ln{fill:none;stroke:var(--accent);stroke-linecap:round;transition:stroke-opacity var(--dur)}
+  #qq-panel .graph .ge:hover .ln{stroke-opacity:.95!important}
+  #qq-panel .graph .gn .nd{fill:color-mix(in srgb,var(--c) 18%,var(--card));stroke:var(--c);stroke-width:2.5}
+  #qq-panel .graph .gn .halo{fill:color-mix(in srgb,var(--c) 16%,transparent);opacity:0;transition:opacity var(--dur)}
+  #qq-panel .graph .gn:hover .halo{opacity:1}
+  #qq-panel .graph .gn .gi{font-weight:750;fill:color-mix(in srgb,var(--c) 80%,var(--text))}
+  #qq-panel .graph .gl{font-size:12px;font-weight:650;fill:var(--text);paint-order:stroke;stroke:var(--bubble);stroke-width:4px;stroke-linejoin:round}
+
+  /* 线条图标（iconize 把界面上的 emoji 换成它们） */
+  #qq-panel .qi{width:1.08em;height:1.08em;flex:0 0 auto;vertical-align:-.17em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+  #qq-panel .bub .qi,#qq-panel .fcard .ico .qi,#qq-panel .todo .ti .qi,#qq-panel nav .ic .qi,#qq-panel .lrow .lead .qi{width:54%;height:54%;vertical-align:0}
+  #qq-panel .bub,#qq-panel .fcard .ico,#qq-panel .lrow .lead{color:var(--accent)}
+  #qq-panel .stat.ok .bub{color:var(--ok)} #qq-panel .stat.warn .bub{color:var(--warn)} #qq-panel .stat.bad .bub{color:var(--bad)}
+  #qq-panel .todo a .ti{color:var(--accent)} #qq-panel .todo a.bad .ti{color:var(--bad)} #qq-panel .todo a.warn .ti{color:var(--warn)}
+  #qq-panel .dialog.danger .dt .bub{color:var(--bad)}
+  #qq-panel .fcard.off .ico{color:var(--muted)}
+  #qq-panel .lrow.warn .lead{color:var(--warn)}
+  #qq-panel h3 .qi,#qq-panel h4 .qi,#qq-panel .card-hd > .qi,#qq-panel details.fold > summary > .qi{color:var(--accent)}
+  #qq-panel .btn .qi{width:15px;height:15px;vertical-align:0}
+  #qq-panel .btn.primary .qi,#qq-panel .btn.danger.solid .qi{color:#fff}
+  #qq-panel .chip .qi{width:13px;height:13px;vertical-align:0}
+  #qq-panel .lrow .meta .qi.i-star{color:#E0A21F;fill:color-mix(in srgb,#E0A21F 30%,transparent)}
+  #qq-panel .emo{font-style:normal}
+  #qq-panel .wh.inline{display:inline-block;vertical-align:-.3em}
+
+  /* 带颜色的小标签（情绪、来源、故事类型……）：--c 是基色 */
+  #qq-panel .chip.tint{background:color-mix(in srgb,var(--c) 15%,var(--card));color:color-mix(in srgb,var(--c) 70%,var(--text));border-color:color-mix(in srgb,var(--c) 20%,transparent)}
+  #qq-panel .chip.tint.strong{box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 60%,transparent);font-weight:700}
+  #qq-panel .lrow .lead.tint{background:color-mix(in srgb,var(--c) 16%,var(--card));color:color-mix(in srgb,var(--c) 75%,var(--text))}
+  #qq-panel .chip .lg{display:inline-block;width:9px;height:9px;border-radius:3px}
+  /* 头像：名字第一个字，颜色按人固定 */
+  #qq-panel .avt{width:30px;height:30px;border-radius:50%;display:inline-grid;place-items:center;flex:0 0 auto;font-weight:750;font-size:13px;
+    background:color-mix(in srgb,var(--c) 20%,var(--card));color:color-mix(in srgb,var(--c) 80%,var(--text))}
+  #qq-panel .msg .av.avt{background:color-mix(in srgb,var(--c) 20%,var(--card));color:color-mix(in srgb,var(--c) 80%,var(--text))}
+
+  /* 图表（SVG）：网格线、坐标字、柱子、曲线 */
+  #qq-panel .chart{width:100%;height:auto;display:block;color:var(--text);overflow:visible}
+  #qq-panel .chart .gl{stroke:var(--line-2);stroke-width:1;stroke-dasharray:3 4}
+  #qq-panel .chart .ax{fill:var(--muted);font-size:10.5px;font-variant-numeric:tabular-nums}
+  #qq-panel .chart .hit{fill:transparent;pointer-events:all}
+  #qq-panel .chart .col:hover .hit,#qq-panel .chart .ubar:hover .hit,#qq-panel .chart .pt:hover .hit{fill:color-mix(in srgb,var(--accent) 7%,transparent)}
+  #qq-panel .chart .col:hover g{filter:brightness(1.06) saturate(1.1)}
+  #qq-panel .usage-chart{max-height:200px}
+  #qq-panel .chart .bv{fill:url(#ug-bar);transition:fill var(--dur)}
+  #qq-panel .chart .ubar:hover .bv{fill:color-mix(in srgb,var(--accent) 70%,var(--card))}
+  #qq-panel .chart .ubar.today .bv{fill:var(--accent)}
+  #qq-panel .chart .uv{fill:var(--accent);font-size:11.5px;font-weight:700}
+  #qq-panel .chart .ln{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  #qq-panel .chart .vl{stroke:var(--accent);stroke-width:1;stroke-dasharray:3 3;opacity:0}
+  #qq-panel .chart .pt .dot{fill:var(--card);stroke:var(--accent);stroke-width:2;opacity:0;transition:opacity var(--dur)}
+  #qq-panel .chart .pt.on .dot,#qq-panel .chart .pt.last .dot,#qq-panel .chart .pt:hover .dot{opacity:1}
+  #qq-panel .chart .pt.last .dot{fill:var(--accent);stroke:var(--card)}
+  #qq-panel .chart .pt:hover .vl{opacity:.45}
+  /* 悬停气泡 */
+  #qq-panel .qtip{position:absolute;z-index:90;left:0;top:0;transform:translate(-50%,-100%) translateY(4px);background:var(--text);color:var(--card);
+    padding:7px 11px;border-radius:12px;font-size:12px;line-height:1.55;white-space:pre-line;pointer-events:none;opacity:0;
+    box-shadow:var(--shadow-up);transition:opacity 120ms var(--ease),transform 120ms var(--ease);max-width:260px;text-align:center}
+  #qq-panel .qtip.show{opacity:1;transform:translate(-50%,-100%)}
+  #qq-panel .qtip::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:inherit;transform:translateX(-50%) rotate(45deg);border-radius:2px}
+
+  /* 总览页头：小鲸鱼 + 问候；背景随早晚变 */
+  #qq-panel .hero{position:relative;display:flex;align-items:center;gap:18px;padding:18px 22px;margin:0 0 18px;border-radius:24px;overflow:hidden;flex-wrap:wrap;
+    background:linear-gradient(120deg,var(--h1),var(--h2));border:1px solid var(--line-2);box-shadow:var(--shadow)}
+  #qq-panel .hero::before,#qq-panel .hero::after{content:"";position:absolute;border-radius:50%;pointer-events:none;background:color-mix(in srgb,var(--card) 45%,transparent)}
+  #qq-panel .hero::before{width:180px;height:180px;right:-50px;top:-80px}
+  #qq-panel .hero::after{width:90px;height:90px;right:140px;bottom:-56px;opacity:.7}
+  #qq-panel .hero.t-morning{--h1:color-mix(in srgb,#FFC98B 30%,var(--card));--h2:color-mix(in srgb,var(--accent) 12%,var(--card))}
+  #qq-panel .hero.t-day{--h1:color-mix(in srgb,#8FD3FF 30%,var(--card));--h2:color-mix(in srgb,var(--accent) 10%,var(--card))}
+  #qq-panel .hero.t-evening{--h1:color-mix(in srgb,#FFB08A 28%,var(--card));--h2:color-mix(in srgb,#B39DFF 22%,var(--card))}
+  #qq-panel .hero.t-night{--h1:color-mix(in srgb,#7C8CFF 24%,var(--card));--h2:color-mix(in srgb,#2E3A70 22%,var(--card))}
+  #qq-panel .hero > *{position:relative;z-index:1}
+  #qq-panel .hero .hw{flex:0 0 auto;width:92px}
+  #qq-panel .hero .grow{flex:1 1 260px}
+  #qq-panel .hero .hi{font-size:21px;font-weight:750;letter-spacing:-.02em;line-height:1.3}
+  #qq-panel .hero .hs{font-size:13.5px;margin-top:4px}
+  #qq-panel .hero .hm{margin-top:6px}
+  #qq-panel .hero .acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-self:flex-start}
+
+  /* 小鲸鱼（SVG） */
+  #qq-panel .wh{display:block;height:auto;overflow:visible;flex:0 0 auto}
+  #qq-panel .wh .wb{fill:var(--wh-body)} #qq-panel .wh .wt{fill:var(--wh-tail)} #qq-panel .wh .wfin{fill:var(--wh-fin)}
+  #qq-panel .wh .wbel{fill:var(--wh-belly)}
+  #qq-panel .wh .whl{fill:none;stroke:#fff;stroke-opacity:.5;stroke-width:3.4;stroke-linecap:round}
+  #qq-panel .wh .we{fill:var(--wh-eye)} #qq-panel .wh .wg{fill:#fff}
+  #qq-panel .wh .wl{fill:none;stroke:var(--wh-eye);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  #qq-panel .wh .wl.thin{stroke-width:1.8}
+  #qq-panel .wh .wm{fill:var(--wh-mouth)}
+  #qq-panel .wh .wc{fill:var(--wh-cheek);opacity:.75}
+  #qq-panel .wh .wsp path{fill:none;stroke:var(--wh-spout);stroke-width:2.6;stroke-linecap:round}
+  #qq-panel .wh .wsp circle,#qq-panel .wh .wbb{fill:var(--wh-spout)}
+  #qq-panel .wh .wbb{fill-opacity:.25;stroke:var(--wh-spout);stroke-width:1.6}
+  #qq-panel .wh .wst{fill:var(--wh-star)}
+  #qq-panel .wh .wz{fill:var(--accent);font:800 13px/1 system-ui,sans-serif;opacity:.85}
+  #qq-panel .wh .wwa{fill:var(--wh-water);opacity:.8}
+  #qq-panel .wh .wfloat,#qq-panel .wh .wt,#qq-panel .wh .wsp,#qq-panel .wh .wbb,#qq-panel .wh .wz,#qq-panel .wh .wst{transform-box:fill-box}
+  #qq-panel .wh .wt{transform-origin:0 80%}
+  #qq-panel .wh .wsp{transform-origin:50% 100%}
+  #qq-panel .wh.swim .wfloat{animation:qw-bob 2.2s ease-in-out infinite}
+  #qq-panel .wh.swim .wt{animation:qw-tail 1.1s ease-in-out infinite}
+  #qq-panel .wh.swim .wbb,#qq-panel .wh.peek .wbb{animation:qw-bubble 2.4s ease-in infinite}
+  #qq-panel .wh .wbb.b2{animation-delay:.7s} #qq-panel .wh .wbb.b3{animation-delay:1.4s}
+  #qq-panel .wh.happy .wsp{animation:qw-spout 1.6s ease-in-out infinite}
+  #qq-panel .wh.happy .wfloat{animation:qw-bob 3s ease-in-out infinite}
+  #qq-panel .wh.sleep .wz{animation:qw-z 2.6s ease-in-out infinite} #qq-panel .wh.sleep .wz.z2{animation-delay:1.3s}
+  #qq-panel .wh.dizzy .wfloat{transform-origin:50% 60%;animation:qw-wobble 1.8s ease-in-out infinite}
+  #qq-panel .wh.dizzy .wst{transform-origin:50% 50%;animation:qw-twinkle 1.2s ease-in-out infinite} #qq-panel .wh.dizzy .wst.s2{animation-delay:.6s}
+  #qq-panel .wh.peek .wfloat{animation:qw-peek 3s ease-in-out infinite}
+
+  /* 保存成功：按钮变绿打个勾；红点数字变了跳一下 */
+  #qq-panel .btn.saved{background:var(--ok)!important;border-color:var(--ok)!important;color:#fff!important;box-shadow:0 4px 12px color-mix(in srgb,var(--ok) 30%,transparent)!important;opacity:1}
+  #qq-panel .btn.saved .qi{animation:qq-tick 200ms var(--spring);color:#fff}
+  #qq-panel .badge.bump{animation:qq-bump 200ms var(--spring)}
+
+  /* toast */
+  #qq-panel .toast{position:absolute;left:50%;bottom:28px;z-index:80;transform:translate(-50%,12px);background:var(--text);color:var(--card);
+    padding:10px 18px;border-radius:var(--r-pill);font-size:13.5px;font-weight:600;box-shadow:var(--shadow-pop);opacity:0;pointer-events:none;
+    transition:opacity var(--dur),transform var(--dur) var(--ease);max-width:min(560px,90%);text-align:center}
+  #qq-panel .toast.show{opacity:1;transform:translate(-50%,0)}
+  #qq-panel .toast.err{background:var(--bad);color:#fff}
+  #qq-panel .toast.ok{background:var(--ok);color:#fff}
+
+  /* ── 动效（适度，≤ 220ms） ── */
+  @keyframes qq-fade{from{opacity:0}to{opacity:1}}
+  @keyframes qq-pop{from{opacity:0;transform:translateX(-50%) scale(.96)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+  @keyframes qq-slide{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+  @keyframes qq-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  @keyframes qq-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  @keyframes qq-shimmer{0%{background-position:100% 50%}100%{background-position:0 50%}}
+  @keyframes qq-bump{0%{transform:scale(.55)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+  @keyframes qq-tick{from{transform:scale(.3) rotate(-25deg);opacity:0}to{transform:none;opacity:1}}
+  @keyframes qw-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  @keyframes qw-tail{0%,100%{transform:rotate(0)}50%{transform:rotate(-12deg)}}
+  @keyframes qw-bubble{0%{transform:translateY(8px);opacity:0}25%{opacity:.9}100%{transform:translateY(-16px);opacity:0}}
+  @keyframes qw-spout{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.78)}}
+  @keyframes qw-z{0%{transform:translate(0,5px);opacity:0}30%{opacity:.9}100%{transform:translate(7px,-9px);opacity:0}}
+  @keyframes qw-wobble{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+  @keyframes qw-twinkle{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}
+  @keyframes qw-peek{0%,100%{transform:translateY(5px)}50%{transform:translateY(-2px)}}
+  #qq-panel .page{animation:qq-in 200ms var(--ease)}
+  #qq-panel .nav-results.show{animation:qq-fade var(--dur) var(--ease)}
+  @media (prefers-reduced-motion: reduce){
+    #qq-panel *,#qq-panel *::before,#qq-panel *::after{animation:none !important;transition:none !important;scroll-behavior:auto !important}
   }
 
-  /* ── 每群性格：左列表 + 右分节编辑 ───────────────── */
-  #qq-panel .rc-row{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid transparent}
-  #qq-panel .rc-row:hover{background:var(--line-2)}
-  #qq-panel .rc-row.on{background:var(--line-2);border-color:var(--line)}
-  #qq-panel .rc-hd{position:sticky;top:0;z-index:6;margin:-2px 0 10px;padding:8px 0 8px;
-    background:color-mix(in srgb,var(--card) 94%,transparent);backdrop-filter:blur(6px);border-bottom:1px solid var(--line-2)}
-  #qq-panel details.rc-sec{border-top:1px solid var(--line-2);padding:6px 0}
-  #qq-panel details.rc-sec>summary{cursor:pointer;font-weight:600;font-size:13px;padding:8px 2px;color:var(--text)}
-  #qq-panel details.rc-sec>summary::marker{color:var(--muted)}
-  #qq-panel .rc-field{padding:6px 2px}
-  #qq-panel .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
-  #qq-panel .btn.ghost:hover{color:var(--text);border-color:var(--muted)}
+  @media (max-width: 640px){ #qq-panel .brand > span:not(.whale),#qq-panel .brand small{display:none} }
+
+  /* ── 窄屏（< 900px）：导航收成下拉；参数变上下排；表格可横滚 ── */
+  @media (max-width: 900px){
+    #qq-panel .shell{flex-direction:column}
+    #qq-panel .shell{position:relative}
+    #qq-panel nav{display:none;position:absolute;z-index:50;top:8px;left:10px;right:10px;width:auto;max-height:80%;border:1px solid var(--line);
+      border-radius:20px;box-shadow:var(--shadow-pop)}
+    #qq-panel nav.open{display:block;animation:qq-fade var(--dur) var(--ease)}
+    #qq-panel .nav-mobile{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--card);border-bottom:1px solid var(--line-2)}
+    #qq-panel main{padding:18px 14px 80px}
+    #qq-panel .field{grid-template-columns:1fr;gap:8px}
+    #qq-panel .pill.pills-mini{display:inline-flex}
+    #qq-panel .pills{display:none;position:absolute;z-index:56;top:calc(100% - 4px);left:12px;right:12px;flex-direction:column;align-items:flex-start;gap:6px;
+      padding:10px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-pop)}
+    #qq-panel .pills.open{display:flex;animation:qq-fade var(--dur) var(--ease)}
+    #qq-panel .page-hd h2{font-size:19px}
+    #qq-panel .rc-wrap{flex-direction:column}
+    #qq-panel .rc-list{flex:none;width:100%;position:static}
+    #qq-panel .fld-grid{grid-template-columns:1fr}
+    #qq-panel .lrow .side{display:none}
+  }
