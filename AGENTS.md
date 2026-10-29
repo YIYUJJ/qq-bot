@@ -259,6 +259,14 @@ node "$dir\scripts\doctor.mjs"
 - 面板怎么打开（DSH 左侧栏「QQ 机器人」），总开关现在是开还是关
 - 以后怎么升级、怎么卸载（下一节；也可以直接跟 AI 说「更新 QQ 机器人」「卸载 QQ 机器人」）
 
+用户要求「把安装技能放进技能目录」时（或用户同意了你的提议），把技能复制到 DSH 的用户技能目录，以后任何对话都能找到它：
+
+```powershell
+$d = "$env:USERPROFILE\.dsh\skills\install-qq-bot"
+New-Item -ItemType Directory -Force $d | Out-Null
+Copy-Item "$dir\.agents\skills\install-qq-bot\SKILL.md" $d -Force
+```
+
 ---
 
 ## 升级 / 卸载

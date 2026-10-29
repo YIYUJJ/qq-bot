@@ -88,7 +88,17 @@ AI 安装时会把这份清单原样列给你：
 
 ## 让 DeepSeek 记住这个技能（可选）
 
-把仓库里的安装技能放进 DSH 的技能目录，以后在任何对话里说「安装 QQ 机器人」「更新 QQ 机器人」，DeepSeek 都能自己找到它。在 PowerShell 里执行：
+把仓库里的安装技能放进 DSH 的技能目录，以后在任何对话里说「安装 QQ 机器人」「更新 QQ 机器人」，DeepSeek 都能自己找到它。
+
+已经装过机器人（代码在默认目录）时，直接从代码目录复制，不用联网：
+
+```powershell
+$d = "$env:USERPROFILE\.dsh\skills\install-qq-bot"
+New-Item -ItemType Directory -Force $d | Out-Null
+Copy-Item "$env:USERPROFILE\dsh-plugins\qq-bot\.agents\skills\install-qq-bot\SKILL.md" $d -Force
+```
+
+还没装过，可以直接下载这个技能文件：
 
 ```powershell
 $d = "$env:USERPROFILE\.dsh\skills\install-qq-bot"
@@ -96,7 +106,7 @@ New-Item -ItemType Directory -Force $d | Out-Null
 Invoke-WebRequest "https://raw.githubusercontent.com/YIYUJJ/qq-bot/main/.agents/skills/install-qq-bot/SKILL.md" -OutFile "$d\SKILL.md"
 ```
 
-`raw.githubusercontent.com` 连不上的话，直接用上面的方式一或方式二就行，效果一样。
+`raw.githubusercontent.com` 在有些网络里连不上，连不上就直接用上面的方式一或方式二，效果一样；装好后再用第一种方法复制。也可以在安装时跟 DeepSeek 说一句「顺便把安装技能放进技能目录」。
 
 ---
 
